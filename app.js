@@ -15,17 +15,26 @@ function formatMoney(value) {
   return `$${Math.round(Number(value || 0))}`;
 }
 
-function estimateTooltip(estimate, unavailableReason) {
-  if (!estimate) return unavailableReason || 'No matching local chart file was found, so there is no mapping-time estimate.';
-  const base = `${formatMoney(estimate.base)} base (${estimate.baseReason || 'estimated rate'})`;
-  const service = `${formatMoney(estimate.serviceFee)} service fee`;
-  const expert = `Expert: ${Number(estimate.expertMinutesRounded)} min → ${formatMoney(estimate.expertCost)}`;
+function estimateTooltipItems(estimate, unavailableReason) {
+  if (!estimate) {
+    return [{ label: 'Estimate unavailable', value: unavailableReason || 'No matching local chart file was found.' }];
+  }
   const otherCount = Number(estimate.otherDifficultyCount || 0);
-  const extras = otherCount ? `${otherCount} additional ${otherCount === 1 ? 'difficulty' : 'difficulties'} × ${formatMoney(2)} = ${formatMoney(estimate.otherDifficultyCost)}` : '';
-  const albumNote = estimate.albumDiscountApplied
-    ? ` Album base is ${formatMoney(estimate.base)} because ${estimate.albumSongCount} matching songs from this album were found.`
-    : '';
-  return `Math: ${[base, service, expert, extras].filter(Boolean).join(' + ')} = ${formatMoney(estimate.total)}.${albumNote} Rough estimate only.`;
+  return [
+    {
+      label: 'Base + service fee',
+      value: `${formatMoney(estimate.base)} + ${formatMoney(estimate.serviceFee)} = ${formatMoney(Number(estimate.base) + Number(estimate.serviceFee))}`,
+    },
+    {
+      label: 'Expert',
+      value: `${Number(estimate.expertMinutesRounded)} min × $1/10 min = ${formatMoney(estimate.expertCost)}`,
+    },
+    {
+      label: 'Difficulties',
+      value: otherCount ? `${otherCount} × $2 = ${formatMoney(estimate.otherDifficultyCost)}` : `None = ${formatMoney(0)}`,
+    },
+    { label: 'Total', value: formatMoney(estimate.total), total: true },
+  ];
 }
 
 function safeCoverUrl(value) {
@@ -39,7 +48,7 @@ function positionPriceTooltip(estimate) {
   const tooltip = estimate.querySelector('.price-tooltip');
   if (!tooltip) return;
   const rect = estimate.getBoundingClientRect();
-  const width = Math.min(330, window.innerWidth - 40);
+  const width = Math.min(360, window.innerWidth - 40);
   tooltip.classList.toggle('align-right', rect.left + width > window.innerWidth - 12);
 }
 
@@ -130,14 +139,23 @@ function render() {
     estimate.className = chart.estimate ? 'price-estimate' : 'price-estimate missing';
     estimate.tabIndex = 0;
     estimate.textContent = chart.estimate ? `~${formatMoney(chart.estimate.total)} estimate` : 'Estimate unavailable';
-    const tooltip = estimateTooltip(chart.estimate, chart.estimateUnavailableReason);
-      estimate.setAttribute('aria-label', tooltip);
+    const tooltipLines = estimateTooltipItems(chart.estimate, chart.estimateUnavailableReason);
+    estimate.setAttribute('aria-label', tooltipLines.map((line) => `${line.label}: ${line.value}`).join('. '));
     estimate.addEventListener('mouseenter', () => positionPriceTooltip(estimate));
     estimate.addEventListener('focus', () => positionPriceTooltip(estimate));
     const tooltipText = document.createElement('span');
     tooltipText.className = 'price-tooltip';
     tooltipText.setAttribute('role', 'tooltip');
-    tooltipText.textContent = tooltip;
+    for (const item of tooltipLines) {
+      const line = document.createElement('span');
+      line.className = item.total ? 'tooltip-line tooltip-total' : 'tooltip-line';
+      const label = document.createElement('span');
+      label.textContent = item.label;
+      const value = document.createElement('strong');
+      value.textContent = item.value;
+      line.append(label, value);
+      tooltipText.append(line);
+    }
     estimate.append(tooltipText);
     meta.append(estimate);
 

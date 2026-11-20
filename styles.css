@@ -86,7 +86,7 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #ff302822; }
   z-index: 1;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(140deg, rgba(31, 2, 5, .68), rgba(46, 3, 7, .80));
+  background: linear-gradient(140deg, rgba(31, 2, 5, .52), rgba(46, 3, 7, .68));
   pointer-events: none;
 }
 .card:hover, .card:focus-within { z-index: 20; transform: translateY(-2px); border-color: #d3282f; }
@@ -134,7 +134,7 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #ff302822; }
   transition: transform .18s ease, background .18s ease;
 }
 .video-facade:hover .video-play { transform: scale(1.08); background: #f01c26; }
-.card-body { padding: 17px 18px 19px; background: rgba(28, 3, 6, .77); backdrop-filter: blur(8px); border-radius: 0 0 12px 12px; }
+.card-body { padding: 17px 18px 19px; background: rgba(28, 3, 6, .68); backdrop-filter: blur(8px); border-radius: 0 0 12px 12px; }
 .artist { margin: 0 0 4px; color: #ff6158; font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: .05em; text-transform: uppercase; }
 .title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 h2 { margin: 0; font-size: 21px; letter-spacing: -.035em; }
@@ -158,7 +158,7 @@ h2 { margin: 0; font-size: 21px; letter-spacing: -.035em; }
   z-index: 1000;
   left: 0;
   bottom: calc(100% + 9px);
-  width: min(330px, calc(100vw - 40px));
+  width: min(360px, calc(100vw - 40px));
   padding: 11px 13px;
   border: 1px solid #bd262c;
   border-radius: 9px;
@@ -179,6 +179,11 @@ h2 { margin: 0; font-size: 21px; letter-spacing: -.035em; }
   transform: translateY(0);
 }
 .price-tooltip.align-right { left: auto; right: 0; }
+.tooltip-line { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.tooltip-line > span { color: var(--muted); }
+.tooltip-line > strong { color: var(--text); font-weight: 500; text-align: right; }
+.tooltip-total { border-top: 1px solid #8d2027; margin-top: 2px; padding-top: 7px; }
+.tooltip-total > span, .tooltip-total > strong { color: #fff1ee; font-weight: 700; }
 .card-links { margin-top: 14px; display: flex; gap: 15px; font-size: 12px; }
 .card-links a { text-decoration: none; }
 .card-links a:hover, footer a:hover { text-decoration: underline; }
