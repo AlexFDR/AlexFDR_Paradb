@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101311" />
+    <meta name="description" content="YouTube previews for AlexFDR's ParaDB charts." />
+    <title>AlexFDR — ParaDB Video Gallery</title>
+    <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <p class="eyebrow">PARADB · VIDEO ARCHIVE</p>
+        <h1>AlexFDR<span>’s charts</span></h1>
+        <p class="intro">Video previews collected from chart descriptions on ParaDB.</p>
+        <div class="toolbar">
+          <label class="search-label" for="search">Find a song or artist</label>
+          <input id="search" type="search" placeholder="Search the gallery…" autocomplete="off" />
+          <p id="count" class="count" aria-live="polite">Loading charts…</p>
+        </div>
+      </header>
+      <section id="gallery" class="gallery" aria-label="Chart video gallery"></section>
+      <section id="status" class="status" aria-live="polite"></section>
+      <footer>
+        <span>Chart data from <a href="https://paradb.net" target="_blank" rel="noreferrer">ParaDB</a></span>
+        <span>Video embeds served by YouTube</span>
+      </footer>
+    </main>
+  </body>
+</html>
