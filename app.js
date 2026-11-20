@@ -35,6 +35,15 @@ function safeCoverUrl(value) {
   } catch { return null; }
 }
 
+function positionPriceTooltip(estimate) {
+  const tooltip = estimate.querySelector('.price-tooltip');
+  if (!tooltip) return;
+  const rect = estimate.getBoundingClientRect();
+  const width = Math.min(330, window.innerWidth - 40);
+  tooltip.classList.toggle('align-right', rect.left + width > window.innerWidth - 12);
+}
+
+
 function createIframe(chart) {
   const iframe = document.createElement('iframe');
   iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(chart.video.id)}?autoplay=1&playsinline=1`;
@@ -122,8 +131,9 @@ function render() {
     estimate.tabIndex = 0;
     estimate.textContent = chart.estimate ? `~${formatMoney(chart.estimate.total)} estimate` : 'Estimate unavailable';
     const tooltip = estimateTooltip(chart.estimate, chart.estimateUnavailableReason);
-    estimate.title = tooltip;
-    estimate.setAttribute('aria-label', tooltip);
+      estimate.setAttribute('aria-label', tooltip);
+    estimate.addEventListener('mouseenter', () => positionPriceTooltip(estimate));
+    estimate.addEventListener('focus', () => positionPriceTooltip(estimate));
     const tooltipText = document.createElement('span');
     tooltipText.className = 'price-tooltip';
     tooltipText.setAttribute('role', 'tooltip');
