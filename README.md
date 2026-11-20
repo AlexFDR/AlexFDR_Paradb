@@ -12,7 +12,7 @@ A static GitHub Pages gallery for YouTube previews in ParaDB charts uploaded by 
 
 ## Estimate calculation
 
-The site treats `mappingTime` as seconds, based on five-minute autosave increments in the local chart files. It rounds Expert mapping time to the nearest ten minutes at $1 per ten minutes, with a $2 minimum. Each additional difficulty adds $2. The calculation adds a $2 service fee and a $20 base rate, or $10 per song for albums represented by at least six matched gallery songs. Prices are rounded to whole dollars and are rough estimates, not quotes.
+The site treats `mappingTime` as seconds, based on five-minute autosave increments in the local chart files. It rounds Expert mapping time to the nearest ten minutes at $1 per ten minutes, with a $2 minimum. Each additional difficulty adds $2. The calculation adds a $2 service fee and a $20 base rate. The base is $15 when Expert mapping time is under 45 minutes, or $10 per song for albums represented by at least six matched gallery songs. Prices are rounded to whole dollars and are rough estimates, not quotes.
 
 ## Publish
 

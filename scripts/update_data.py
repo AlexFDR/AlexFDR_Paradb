@@ -78,9 +78,18 @@ def estimate_price(entry, album_song_count):
     expert_cost = max(2, int(rounded_minutes / 10))
     other_difficulties = sorted(entry.get("otherDifficulties", []))
     other_cost = len(other_difficulties) * 2
-    base = 10 if album_song_count >= 6 else 20
+    if album_song_count >= 6:
+        base = 10
+        base_reason = "album rate: 6+ matched songs"
+    elif raw_minutes < 45:
+        base = 15
+        base_reason = "Expert time under 45 minutes"
+    else:
+        base = 20
+        base_reason = "standard base"
     return {
         "base": base,
+        "baseReason": base_reason,
         "serviceFee": 2,
         "albumSongCount": album_song_count,
         "albumDiscountApplied": album_song_count >= 6,

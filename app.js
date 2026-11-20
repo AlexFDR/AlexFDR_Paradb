@@ -17,9 +17,9 @@ function formatMoney(value) {
 
 function estimateTooltip(estimate, unavailableReason) {
   if (!estimate) return unavailableReason || 'No matching local chart file was found, so there is no mapping-time estimate.';
-  const base = `${formatMoney(estimate.base)} base`;
+  const base = `${formatMoney(estimate.base)} base (${estimate.baseReason || 'estimated rate'})`;
   const service = `${formatMoney(estimate.serviceFee)} service fee`;
-  const expert = `Expert: ${Number(estimate.expertMinutesRaw).toFixed(1)} min → ${Number(estimate.expertMinutesRounded)} min → ${formatMoney(estimate.expertCost)}`;
+  const expert = `Expert: ${Number(estimate.expertMinutesRounded)} min → ${formatMoney(estimate.expertCost)}`;
   const otherCount = Number(estimate.otherDifficultyCount || 0);
   const extras = otherCount ? `${otherCount} additional ${otherCount === 1 ? 'difficulty' : 'difficulties'} × ${formatMoney(2)} = ${formatMoney(estimate.otherDifficultyCost)}` : '';
   const albumNote = estimate.albumDiscountApplied
