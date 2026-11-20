@@ -1,11 +1,21 @@
 const gallery = document.querySelector('#gallery');
 const statusEl = document.querySelector('#status');
+const modsGallery = document.querySelector('#mods-gallery');
+const modsStatus = document.querySelector('#mods-status');
+const videosPage = document.querySelector('#videos-page');
+const modsPage = document.querySelector('#mods-page');
+const videosTab = document.querySelector('#videos-tab');
+const modsTab = document.querySelector('#mods-tab');
+const pageTitle = document.querySelector('#page-title');
+const searchLabel = document.querySelector('#search-label');
 const search = document.querySelector('#search');
 const count = document.querySelector('#count');
 const howButton = document.querySelector('#how-button');
 const infoDialog = document.querySelector('#info-dialog');
 const closeDialog = document.querySelector('#close-dialog');
 let charts = [];
+let mods = [];
+let activePage = 'videos';
 
 function safeText(value) {
   return String(value ?? '');
@@ -91,10 +101,10 @@ function createVideoFacade(chart, video) {
   video.append(facade);
 }
 
-function render() {
+function renderVideos() {
   const needle = search.value.trim().toLocaleLowerCase();
   const shown = charts.filter((chart) => `${chart.title} ${chart.artist}`.toLocaleLowerCase().includes(needle));
-  count.textContent = `${shown.length} ${shown.length === 1 ? 'chart' : 'charts'}`;
+  if (activePage === 'videos') count.textContent = `${shown.length} ${shown.length === 1 ? 'chart' : 'charts'}`;
   gallery.replaceChildren();
   statusEl.textContent = shown.length ? '' : 'No charts match that search.';
 
@@ -178,14 +188,14 @@ function render() {
   }
 }
 
-async function load() {
+async function loadVideos() {
   try {
     const response = await fetch('data/charts.json', { cache: 'no-store' });
     if (!response.ok) throw new Error(`Gallery data returned HTTP ${response.status}`);
     const payload = await response.json();
     charts = Array.isArray(payload.charts) ? payload.charts : [];
     charts.sort((a, b) => new Date(b.submissionDate || 0) - new Date(a.submissionDate || 0));
-    render();
+    renderVideos();
     statusEl.className = 'status';
     if (!charts.length) statusEl.textContent = 'No YouTube previews were found in the latest chart data.';
   } catch (error) {
@@ -196,10 +206,149 @@ async function load() {
   }
 }
 
+function renderMods() {
+  const needle = search.value.trim().toLocaleLowerCase();
+  const shown = mods.filter((mod) => `${mod.name} ${mod.owner} ${mod.description} ${(mod.categories || []).join(' ')}`.toLocaleLowerCase().includes(needle));
+  if (activePage === 'mods') count.textContent = `${shown.length} ${shown.length === 1 ? 'mod' : 'mods'}`;
+  modsGallery.replaceChildren();
+  modsStatus.textContent = shown.length ? '' : 'No mods match that search.';
+
+  for (const mod of shown) {
+    const card = document.createElement('article');
+    card.className = 'card mod-card';
+    const header = document.createElement('div');
+    header.className = 'mod-header';
+    const iconUrl = safeExternalUrl(mod.iconUrl);
+    if (iconUrl) {
+      const icon = document.createElement('img');
+      icon.className = 'mod-icon';
+      icon.src = iconUrl;
+      icon.alt = `${safeText(mod.name)} icon`;
+      icon.loading = 'lazy';
+      icon.decoding = 'async';
+      header.append(icon);
+    } else {
+      const fallback = document.createElement('div');
+      fallback.className = 'mod-icon mod-icon-fallback';
+      fallback.setAttribute('aria-hidden', 'true');
+      fallback.textContent = safeText(mod.name).slice(0, 1).toUpperCase() || 'M';
+      header.append(fallback);
+    }
+    const heading = document.createElement('div');
+    heading.className = 'mod-heading';
+    const owner = document.createElement('p');
+    owner.className = 'artist';
+    owner.textContent = safeText(mod.owner);
+    const name = document.createElement('h2');
+    name.textContent = safeText(mod.name);
+    heading.append(owner, name);
+    header.append(heading);
+
+    const details = document.createElement('div');
+    details.className = 'mod-details';
+    const description = document.createElement('p');
+    description.className = 'mod-description';
+    description.textContent = safeText(mod.description) || 'No description provided.';
+    const metadata = document.createElement('div');
+    metadata.className = 'mod-meta';
+    if (mod.version) {
+      const version = document.createElement('span');
+      version.className = 'mod-tag';
+      version.textContent = `v${safeText(mod.version)}`;
+      metadata.append(version);
+    }
+    if (Number.isFinite(Number(mod.downloads))) {
+      const downloads = document.createElement('span');
+      downloads.className = 'mod-tag';
+      downloads.textContent = `${Number(mod.downloads).toLocaleString()} downloads`;
+      metadata.append(downloads);
+    }
+    for (const category of (mod.categories || []).slice(0, 3)) {
+      const tag = document.createElement('span');
+      tag.className = 'mod-tag';
+      tag.textContent = safeText(category);
+      metadata.append(tag);
+    }
+    const links = document.createElement('div');
+    links.className = 'card-links mod-links';
+    const packageLink = document.createElement('a');
+    packageLink.href = safeExternalUrl(mod.packageUrl) || `https://thunderstore.io/c/paradiddle/p/${encodeURIComponent(mod.owner)}/${encodeURIComponent(mod.name)}/`;
+    packageLink.target = '_blank';
+    packageLink.rel = 'noreferrer';
+    packageLink.textContent = 'View on Thunderstore ↗';
+    links.append(packageLink);
+    const downloadUrl = safeExternalUrl(mod.downloadUrl);
+    if (downloadUrl) {
+      const download = document.createElement('a');
+      download.href = downloadUrl;
+      download.target = '_blank';
+      download.rel = 'noreferrer';
+      download.textContent = 'Latest download ↗';
+      links.append(download);
+    }
+    details.append(description, metadata, links);
+    card.append(header, details);
+    modsGallery.append(card);
+  }
+}
+
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' ? url.href : null;
+  } catch { return null; }
+}
+
+async function loadMods() {
+  try {
+    const response = await fetch('data/mods.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Thunderstore data returned HTTP ${response.status}`);
+    const payload = await response.json();
+    mods = Array.isArray(payload.mods) ? payload.mods : [];
+    if (activePage === 'mods') renderMods();
+    modsStatus.className = 'status';
+    if (!mods.length) modsStatus.textContent = 'No Thunderstore mods by AlexFDR were found.';
+  } catch (error) {
+    modsStatus.className = 'status error';
+    modsStatus.textContent = 'Could not load the Thunderstore mod list. Please try again later.';
+    console.error(error);
+  }
+}
+
+function selectPage(page) {
+  activePage = page;
+  const showingMods = page === 'mods';
+  document.title = showingMods ? 'AlexFDR — Mods' : 'AlexFDR — ParaDB Video Gallery';
+  videosPage.hidden = showingMods;
+  modsPage.hidden = !showingMods;
+  videosTab.classList.toggle('is-active', !showingMods);
+  modsTab.classList.toggle('is-active', showingMods);
+  if (showingMods) {
+    videosTab.removeAttribute('aria-current');
+    modsTab.setAttribute('aria-current', 'page');
+    pageTitle.textContent = 'AlexFDR’s mods';
+    searchLabel.textContent = 'Find a mod';
+    search.placeholder = 'Search mods…';
+    howButton.hidden = true;
+    renderMods();
+  } else {
+    modsTab.removeAttribute('aria-current');
+    videosTab.setAttribute('aria-current', 'page');
+    pageTitle.textContent = 'AlexFDR’s charts';
+    searchLabel.textContent = 'Find a song or artist';
+    search.placeholder = 'Search the gallery…';
+    howButton.hidden = false;
+    renderVideos();
+  }
+}
+
+videosTab.addEventListener('click', () => selectPage('videos'));
+modsTab.addEventListener('click', () => selectPage('mods'));
+search.addEventListener('input', () => activePage === 'videos' ? renderVideos() : renderMods());
 howButton.addEventListener('click', () => infoDialog.showModal());
 closeDialog.addEventListener('click', () => infoDialog.close());
 infoDialog.addEventListener('click', (event) => {
   if (event.target === infoDialog) infoDialog.close();
 });
-search.addEventListener('input', render);
-load();
+loadVideos();
+loadMods();

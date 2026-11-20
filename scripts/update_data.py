@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Fetch public ParaDB charts and publish uploader U9EAF8A's YouTube previews."""
+import gzip
 import html
 import json
 import math
@@ -9,7 +10,7 @@ import unicodedata
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urlencode
+from urllib.parse import quote, urlencode, urljoin
 from urllib.request import Request, urlopen
 
 API = "https://paradb.net/api/maps"
@@ -17,6 +18,8 @@ UPLOADER = "U9EAF8A"
 LIMIT = 100
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 OUT = DATA_DIR / "charts.json"
+MODS_OUT = DATA_DIR / "mods.json"
+THUNDERSTORE_API = "https://thunderstore.io/c/paradiddle/api/v1/package/"
 PRICES = DATA_DIR / "pricing.json"
 URL_RE = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
 
@@ -120,6 +123,62 @@ def get_page(offset):
         return json.load(response)
 
 
+def get_thunderstore_mods():
+    packages = []
+    next_url = THUNDERSTORE_API
+    while next_url:
+        request = Request(
+            next_url,
+            headers={
+                "User-Agent": "AlexFDRParaDBGallery/1.0",
+                "Accept": "application/json",
+                "Accept-Encoding": "gzip",
+            },
+        )
+        with urlopen(request, timeout=45) as response:
+            body = response.read()
+            if response.headers.get("Content-Encoding", "").lower() == "gzip":
+                body = gzip.decompress(body)
+            payload = json.loads(body.decode("utf-8"))
+        if isinstance(payload, list):
+            packages.extend(payload)
+            next_url = None
+        elif isinstance(payload, dict) and isinstance(payload.get("results"), list):
+            packages.extend(payload["results"])
+            following = payload.get("next")
+            next_url = urljoin(next_url, following) if following else None
+        else:
+            raise RuntimeError("Thunderstore returned an unexpected package list format")
+
+    mods = []
+    for package in packages:
+        owner = str(package.get("owner") or "")
+        if owner.casefold() != "alexfdr":
+            continue
+        versions = package.get("versions") or []
+        active_versions = [version for version in versions if version.get("is_active", True)]
+        version = active_versions[0] if active_versions else {}
+        icon = version.get("icon")
+        if isinstance(icon, str) and icon.startswith("/"):
+            icon = "https://thunderstore.io" + icon
+        package_name = package.get("name") or ""
+        mods.append({
+            "owner": owner,
+            "name": package_name,
+            "fullName": package.get("full_name") or f"{owner}-{package_name}",
+            "packageUrl": package.get("package_url") or f"https://thunderstore.io/c/paradiddle/p/{quote(owner)}/{quote(package_name)}/",
+            "iconUrl": icon if isinstance(icon, str) and icon.startswith("https://") else None,
+            "description": version.get("description") or "",
+            "version": version.get("version_number") or "",
+            "updatedAt": package.get("date_updated") or version.get("date_created"),
+            "downloads": int(version.get("downloads") or 0),
+            "categories": sorted(package.get("categories") or []),
+            "downloadUrl": version.get("download_url") or "",
+        })
+    mods.sort(key=lambda item: (item.get("name") or "").casefold())
+    return mods
+
+
 def main():
     by_key, by_title = load_price_catalog()
     charts_by_id = {}
@@ -190,6 +249,8 @@ def main():
                 chart["estimateUnavailableReason"] = "No Expert difficulty mapping time was found."
         result_charts.append(chart)
 
+    mods = get_thunderstore_mods()
+
     result = {
         "source": API,
         "uploader": UPLOADER,
@@ -198,7 +259,14 @@ def main():
     }
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(result['charts'])} videos from uploader {UPLOADER} (ParaDB reports {total} public charts).")
+    mods_result = {
+        "source": THUNDERSTORE_API,
+        "owner": "AlexFDR",
+        "updatedAt": result["updatedAt"],
+        "mods": mods,
+    }
+    MODS_OUT.write_text(json.dumps(mods_result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"Wrote {len(result['charts'])} videos and {len(mods)} Thunderstore mods.")
 
 
 if __name__ == "__main__":
