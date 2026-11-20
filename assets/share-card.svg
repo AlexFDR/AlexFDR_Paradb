@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">AlexFDR's Charts and Mods</title>
+  <desc id="desc">YouTube previews of ParaDB charts and Paradiddle mods, with a summary of chart pricing.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17080b"/><stop offset="1" stop-color="#3a1016"/></linearGradient>
+    <linearGradient id="accent" x1="0" x2="1"><stop stop-color="#ff4545"/><stop offset="1" stop-color="#bd171e"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1080" cy="50" r="270" fill="#dc2029" opacity=".10"/>
+  <circle cx="70" cy="610" r="230" fill="#ff4545" opacity=".08"/>
+  <rect x="72" y="72" width="8" height="486" rx="4" fill="url(#accent)"/>
+  <text x="112" y="145" fill="#ff7777" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="4">PARADIDDLE · PARADB</text>
+  <text x="108" y="235" fill="#fff4f4" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="800">AlexFDR’s</text>
+  <text x="108" y="310" fill="#fff4f4" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="800">Charts &amp; Mods</text>
+  <text x="112" y="370" fill="#e4c9cc" font-family="Arial, Helvetica, sans-serif" font-size="27">Video previews, chart estimates, and Paradiddle mods</text>
+  <rect x="108" y="420" width="950" height="2" fill="#aa333a" opacity=".75"/>
+  <text x="112" y="470" fill="#ffb0b0" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">CHART PRICING</text>
+  <text x="112" y="515" fill="#fff4f4" font-family="Arial, Helvetica, sans-serif" font-size="25">$20 base + $2 service fee · $1 per 10 minutes</text>
+  <text x="112" y="552" fill="#e4c9cc" font-family="Arial, Helvetica, sans-serif" font-size="22">Additional difficulties double the time rate · 6+ song albums: $10 base per song</text>
+  <text x="112" y="595" fill="#b98e93" font-family="Arial, Helvetica, sans-serif" font-size="17">Estimates are rough and are not quotes</text>
+</svg>
