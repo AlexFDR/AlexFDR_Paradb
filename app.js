@@ -7,48 +7,25 @@ const infoDialog = document.querySelector('#info-dialog');
 const closeDialog = document.querySelector('#close-dialog');
 let charts = [];
 
-function youtubeId(url) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname === 'youtu.be') return parsed.pathname.split('/').filter(Boolean)[0] || null;
-    if (['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'].includes(parsed.hostname)) {
-      if (parsed.pathname === '/watch') return parsed.searchParams.get('v');
-      const match = parsed.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/);
-      return match?.[1] || null;
-    }
-  } catch { /* Ignore malformed URLs in descriptions. */ }
-  return null;
-}
-
-function videoLinks(description) {
-  const doc = new DOMParser().parseFromString(description || '', 'text/html');
-  const candidates = [...doc.querySelectorAll('a[href]')].map((a) => a.href);
-  candidates.push(...(description || '').match(/https?:\/\/[^\s<>"']+/g) || []);
-  return [...new Set(candidates.map((url) => ({ url, id: youtubeId(url) })).filter((item) => item.id))];
-}
-
 function safeText(value) {
   return String(value ?? '');
 }
 
 function formatMoney(value) {
-  return `$${Number(value || 0).toFixed(2)}`;
+  return `$${Math.round(Number(value || 0))}`;
 }
 
-function estimateTooltip(estimate) {
-  if (!estimate) return 'No matching local chart file was found, so there is no mapping-time estimate.';
-  const parts = [`${formatMoney(estimate.base)} base`, `${formatMoney(estimate.serviceFee)} service fee`];
-  for (const item of estimate.difficulties || []) {
-    const raw = Number(item.mappingTimeSeconds || 0) / 600;
-    const math = item.minimumApplied
-      ? `${item.name}: max(${raw.toFixed(2)} × $1, $2 minimum) = ${formatMoney(item.cost)}`
-      : `${item.name}: ${Number(item.mappingTimeSeconds).toLocaleString()}s ÷ 600s × $1 = ${formatMoney(item.cost)}`;
-    parts.push(math);
-  }
+function estimateTooltip(estimate, unavailableReason) {
+  if (!estimate) return unavailableReason || 'No matching local chart file was found, so there is no mapping-time estimate.';
+  const base = `${formatMoney(estimate.base)} base`;
+  const service = `${formatMoney(estimate.serviceFee)} service fee`;
+  const expert = `Expert: ${Number(estimate.expertMinutesRaw).toFixed(1)} min → ${Number(estimate.expertMinutesRounded)} min → ${formatMoney(estimate.expertCost)}`;
+  const otherCount = Number(estimate.otherDifficultyCount || 0);
+  const extras = otherCount ? `${otherCount} additional difficulty ${otherCount === 1 ? '×' : '×'} ${formatMoney(2)} = ${formatMoney(estimate.otherDifficultyCost)}` : '';
   const albumNote = estimate.albumDiscountApplied
-    ? ` Album pricing uses ${formatMoney(estimate.base)} base because ${estimate.albumSongCount} matching songs from this album were found.`
+    ? ` Album base is ${formatMoney(estimate.base)} because ${estimate.albumSongCount} matching songs from this album were found.`
     : '';
-  return `Estimated math: ${parts.join(' + ')} = ${formatMoney(estimate.total)}.${albumNote} Rough estimate only.`;
+  return `Math: ${[base, service, expert, extras].filter(Boolean).join(' + ')} = ${formatMoney(estimate.total)}.${albumNote} Rough estimate only.`;
 }
 
 function safeCoverUrl(value) {
@@ -56,6 +33,44 @@ function safeCoverUrl(value) {
     const url = new URL(value);
     return url.protocol === 'https:' && url.hostname === 'paradb.net' ? url.href : null;
   } catch { return null; }
+}
+
+function createIframe(chart) {
+  const iframe = document.createElement('iframe');
+  iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(chart.video.id)}?autoplay=1&playsinline=1`;
+  iframe.title = `${safeText(chart.artist)} — ${safeText(chart.title)} video preview`;
+  iframe.loading = 'lazy';
+  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+  iframe.allowFullscreen = true;
+  return iframe;
+}
+
+function createVideoFacade(chart, video) {
+  const facade = document.createElement('button');
+  facade.type = 'button';
+  facade.className = 'video-facade';
+  facade.setAttribute('aria-label', `Play video preview for ${safeText(chart.artist)} — ${safeText(chart.title)}`);
+
+  const thumbnail = document.createElement('img');
+  thumbnail.src = `https://i.ytimg.com/vi/${encodeURIComponent(chart.video.id)}/hqdefault.jpg`;
+  thumbnail.alt = '';
+  thumbnail.loading = 'lazy';
+  thumbnail.decoding = 'async';
+  thumbnail.addEventListener('error', () => {
+    if (!thumbnail.src.includes('/mqdefault.jpg')) {
+      thumbnail.src = `https://i.ytimg.com/vi/${encodeURIComponent(chart.video.id)}/mqdefault.jpg`;
+    }
+  }, { once: true });
+
+  const play = document.createElement('span');
+  play.className = 'video-play';
+  play.setAttribute('aria-hidden', 'true');
+  play.textContent = '▶';
+
+  facade.append(thumbnail, play);
+  facade.addEventListener('click', () => video.replaceChildren(createIframe(chart)), { once: true });
+  video.append(facade);
 }
 
 function render() {
@@ -69,18 +84,20 @@ function render() {
     const card = document.createElement('article');
     card.className = 'card';
     const coverUrl = safeCoverUrl(chart.coverUrl);
-    if (coverUrl) card.style.setProperty('--cover-image', `url("${coverUrl}")`);
+    if (coverUrl) {
+      const cover = document.createElement('img');
+      cover.className = 'card-cover';
+      cover.src = coverUrl;
+      cover.alt = '';
+      cover.setAttribute('aria-hidden', 'true');
+      cover.loading = 'lazy';
+      cover.decoding = 'async';
+      card.append(cover);
+    }
 
     const video = document.createElement('div');
     video.className = 'video';
-    const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(chart.video.id)}`;
-    iframe.title = `${safeText(chart.artist)} — ${safeText(chart.title)} video preview`;
-    iframe.loading = 'lazy';
-    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    iframe.allowFullscreen = true;
-    video.append(iframe);
+    createVideoFacade(chart, video);
 
     const body = document.createElement('div');
     body.className = 'card-body';
@@ -103,12 +120,8 @@ function render() {
     const estimate = document.createElement('span');
     estimate.className = chart.estimate ? 'price-estimate' : 'price-estimate missing';
     estimate.tabIndex = 0;
-    if (chart.estimate) {
-      estimate.textContent = `~${formatMoney(chart.estimate.total)}`;
-    } else {
-      estimate.textContent = 'Estimate unavailable';
-    }
-    const tooltip = estimateTooltip(chart.estimate);
+    estimate.textContent = chart.estimate ? `~${formatMoney(chart.estimate.total)} estimate` : 'Estimate unavailable';
+    const tooltip = estimateTooltip(chart.estimate, chart.estimateUnavailableReason);
     estimate.title = tooltip;
     estimate.setAttribute('aria-label', tooltip);
     const tooltipText = document.createElement('span');
@@ -132,6 +145,7 @@ function render() {
     videoLink.textContent = 'Open video ↗';
     links.append(chartLink, videoLink);
     body.append(artist, titleRow, meta, links);
+    video.appendChild(video.firstElementChild);
     card.append(video, body);
     gallery.append(card);
   }

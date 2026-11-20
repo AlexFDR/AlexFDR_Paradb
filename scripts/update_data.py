@@ -2,6 +2,7 @@
 """Fetch public ParaDB charts and publish uploader U9EAF8A's YouTube previews."""
 import html
 import json
+import math
 import re
 import time
 import unicodedata
@@ -69,26 +70,26 @@ def find_price_entry(chart, by_key, by_title):
 
 
 def estimate_price(entry, album_song_count):
+    seconds = entry.get("expertMappingTimeSeconds")
+    if seconds is None:
+        return None
+    raw_minutes = max(0.0, float(seconds)) / 60.0
+    rounded_minutes = math.floor(raw_minutes / 10.0 + 0.5) * 10
+    expert_cost = max(2, int(rounded_minutes / 10))
+    other_difficulties = sorted(entry.get("otherDifficulties", []))
+    other_cost = len(other_difficulties) * 2
     base = 10 if album_song_count >= 6 else 20
-    difficulties = []
-    for name, info in sorted(entry.get("difficulties", {}).items()):
-        seconds = max(0.0, float(info.get("mappingTimeSeconds", 0)))
-        raw_cost = seconds / 600.0
-        cost = round(max(2.0, raw_cost), 2)
-        difficulties.append({
-            "name": name,
-            "mappingTimeSeconds": round(seconds, 2),
-            "cost": cost,
-            "minimumApplied": raw_cost < 2.0,
-        })
-    total = round(base + 2.0 + sum(item["cost"] for item in difficulties), 2)
     return {
         "base": base,
         "serviceFee": 2,
         "albumSongCount": album_song_count,
         "albumDiscountApplied": album_song_count >= 6,
-        "difficulties": difficulties,
-        "total": total,
+        "expertMinutesRaw": round(raw_minutes, 1),
+        "expertMinutesRounded": rounded_minutes,
+        "expertCost": expert_cost,
+        "otherDifficultyCount": len(other_difficulties),
+        "otherDifficultyCost": other_cost,
+        "total": base + 2 + expert_cost + other_cost,
     }
 
 
@@ -173,7 +174,11 @@ def main():
         if entry:
             album_key = normalize(entry.get("album"))
             album_count = len(album_songs.get(album_key, set())) if album_key else 0
-            chart["estimate"] = estimate_price(entry, album_count)
+            estimate = estimate_price(entry, album_count)
+            if estimate:
+                chart["estimate"] = estimate
+            else:
+                chart["estimateUnavailableReason"] = "No Expert difficulty mapping time was found."
         result_charts.append(chart)
 
     result = {

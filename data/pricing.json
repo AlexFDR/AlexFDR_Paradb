@@ -1,581 +1,400 @@
 {
   "mappingTimeUnit": "seconds",
+  "matching": "Normalized title and artist matched to local song folders; AutoSaves excluded.",
   "songs": [
     {
       "key": "calcutta|sleep token",
       "title": "Calcutta",
       "artist": "Sleep Token",
       "album": "Two",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 4657
-        },
-        "Hard": {
-          "mappingTimeSeconds": 4690
-        }
-      }
+      "expertMappingTimeSeconds": 4657,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "thread the needle|sleep token",
       "title": "Thread The Needle",
       "artist": "Sleep Token",
       "album": "One",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 8217
-        }
-      }
+      "expertMappingTimeSeconds": 8217,
+      "otherDifficulties": []
     },
     {
       "key": "fields of elation|sleep token",
       "title": "Fields Of Elation",
       "artist": "Sleep Token",
       "album": "One",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 5404
-        }
-      }
+      "expertMappingTimeSeconds": 5404,
+      "otherDifficulties": []
     },
     {
       "key": "nazareth|sleep token",
       "title": "Nazareth",
       "artist": "Sleep Token",
       "album": "Two",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 6710
-        }
-      }
+      "expertMappingTimeSeconds": 6710,
+      "otherDifficulties": []
     },
     {
       "key": "jericho|sleep token",
       "title": "Jericho",
       "artist": "Sleep Token",
       "album": "Two",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 4227
-        }
-      }
+      "expertMappingTimeSeconds": 4227,
+      "otherDifficulties": []
     },
     {
       "key": "when the bough breaks|sleep token",
       "title": "When The Bough Breaks",
       "artist": "Sleep Token",
       "album": "One",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 7443
-        }
-      }
+      "expertMappingTimeSeconds": 7443,
+      "otherDifficulties": []
     },
     {
       "key": "accidents|alexisonfire",
       "title": "Accidents",
       "artist": "Alexisonfire",
       "album": "Watch Out!",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 9588
-        },
-        "Hard": {
-          "mappingTimeSeconds": 9822
-        }
-      }
+      "expertMappingTimeSeconds": 9588,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "adelleda|alexisonfire",
       "title": "Adelleda",
       "artist": "ALEXISONFIRE",
       "album": "ALEXISONFIRE",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 13108
-        }
-      }
+      "expertMappingTimeSeconds": 13108,
+      "otherDifficulties": []
     },
     {
       "key": "adelleda remastered|alexisonfire",
       "title": "Adelleda (Remastered)",
       "artist": "ALEXISONFIRE",
       "album": "ALEXISONFIRE",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 22018
-        }
-      }
+      "expertMappingTimeSeconds": 22018,
+      "otherDifficulties": []
     },
     {
       "key": "all black|good charlotte",
       "title": "All Black",
       "artist": "Good Charlotte",
       "album": "Good Morning Revival",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 860
-        },
-        "Expert": {
-          "mappingTimeSeconds": 4840
-        },
-        "Hard": {
-          "mappingTimeSeconds": 5074
-        },
-        "Medium": {
-          "mappingTimeSeconds": 934
-        }
-      }
+      "expertMappingTimeSeconds": 4840,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "blinded by the light|manfred mann s earth band",
       "title": "Blinded by the Light",
       "artist": "Manfred Mann's Earth Band",
       "album": "The Roaring Silence",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 12738
-        },
-        "Hard": {
-          "mappingTimeSeconds": 13070
-        }
-      }
+      "expertMappingTimeSeconds": 12738,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "boybanding up|sunrise skater kids",
       "title": "Boybanding' Up",
       "artist": "Sunrise Skater Kids",
       "album": "Friendworld",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 5662
-        },
-        "Hard": {
-          "mappingTimeSeconds": 5790
-        }
-      }
+      "expertMappingTimeSeconds": 5662,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "break apart her heart|good charlotte",
       "title": "Break Apart Her Heart",
       "artist": "Good Charlotte",
       "album": "Good Morning Revival",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 3640
-        },
-        "Expert": {
-          "mappingTimeSeconds": 2802
-        },
-        "Hard": {
-          "mappingTimeSeconds": 2873
-        },
-        "Medium": {
-          "mappingTimeSeconds": 3034
-        }
-      }
+      "expertMappingTimeSeconds": 2802,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "camisado|panic at the disco",
       "title": "Camisado",
       "artist": "Panic! At The Disco",
       "album": "A Fever You Can't Sweat Out",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 1450
-        },
-        "Expert": {
-          "mappingTimeSeconds": 3245
-        },
-        "Hard": {
-          "mappingTimeSeconds": 232
-        },
-        "Medium": {
-          "mappingTimeSeconds": 782
-        }
-      }
+      "expertMappingTimeSeconds": 3245,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "can t get high|red leather",
       "title": "CAN'T GET HIGH",
       "artist": "Red Leather",
       "album": "RENO (ALL IN)",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 1984
-        }
-      }
+      "expertMappingTimeSeconds": 1984,
+      "otherDifficulties": []
     },
     {
       "key": "cemetery gates|pantera",
       "title": "Cemetery Gates",
       "artist": "Pantera",
       "album": "Cowboys from Hell",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 11965
-        }
-      }
+      "expertMappingTimeSeconds": 11965,
+      "otherDifficulties": []
     },
     {
       "key": "cooperative calligraphy|weatherday",
       "title": "Cooperative Calligraphy",
       "artist": "Weatherday",
       "album": "Hornet Disaster",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 8300
-        }
-      }
+      "expertMappingTimeSeconds": 8300,
+      "otherDifficulties": []
     },
     {
       "key": "counterparts and number them|alexisonfire",
       "title": "Counterparts and Number Them",
       "artist": "ALEXISONFIRE",
       "album": "ALEXISONFIRE",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 7225
-        }
-      }
+      "expertMappingTimeSeconds": 7225,
+      "otherDifficulties": []
     },
     {
       "key": "crucible|tesseract",
       "title": "Crucible",
       "artist": "TesseracT",
       "album": "ARC_ONE : Obscura",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 9530
-        },
-        "Expert": {
-          "mappingTimeSeconds": 9530
-        },
-        "Hard": {
-          "mappingTimeSeconds": 9530
-        },
-        "Medium": {
-          "mappingTimeSeconds": 9530
-        }
-      }
+      "expertMappingTimeSeconds": 9530,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "eternity|harai the maid",
       "title": "Eternity",
       "artist": "Harai The Maid",
       "album": "Fainting",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 4684
-        },
-        "Hard": {
-          "mappingTimeSeconds": 4807
-        }
-      }
+      "expertMappingTimeSeconds": 4684,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "fighting trousers|professor elemental",
       "title": "Fighting Trousers",
       "artist": "Professor Elemental",
       "album": "The Indifference Engine",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 1600
-        }
-      }
+      "expertMappingTimeSeconds": 1600,
+      "otherDifficulties": []
     },
     {
       "key": "fool in the rain|led zeppelin",
       "title": "Fool In The Rain",
       "artist": "Led Zeppelin",
       "album": "In Through The Out Door",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 23297
-        },
-        "Expert": {
-          "mappingTimeSeconds": 21832
-        },
-        "Hard": {
-          "mappingTimeSeconds": 21734
-        },
-        "Medium": {
-          "mappingTimeSeconds": 22106
-        }
-      }
+      "expertMappingTimeSeconds": 21832,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "high up|freedom call",
       "title": "High Up",
       "artist": "Freedom Call",
       "album": "Master of Light",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 5236
-        }
-      }
+      "expertMappingTimeSeconds": 5236,
+      "otherDifficulties": []
     },
     {
       "key": "homeless millennial|sunrise skater kids",
       "title": "Homeless Millennial",
       "artist": "Sunrise Skater Kids",
       "album": "Friendworld",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 4278
-        }
-      }
+      "expertMappingTimeSeconds": 4278,
+      "otherDifficulties": []
     },
     {
       "key": "i just wanna live|good charlotte",
       "title": "I Just Wanna Live",
       "artist": "Good Charlotte",
       "album": "The Chronicles of Life and Death",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 1961
-        },
-        "Expert": {
-          "mappingTimeSeconds": 3382
-        },
-        "Hard": {
-          "mappingTimeSeconds": 367
-        },
-        "Medium": {
-          "mappingTimeSeconds": 968
-        }
-      }
+      "expertMappingTimeSeconds": 3382,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "if i m james dean you re audrey hepburn|sleeping with sirens",
       "title": "If I'm James Dean, You're Audrey Hepburn",
       "artist": "Sleeping With Sirens",
       "album": "With Ears to See and Eyes to Hear",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 5096
-        },
-        "Hard": {
-          "mappingTimeSeconds": 5177
-        }
-      }
+      "expertMappingTimeSeconds": 5096,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "lit up|buckcherry",
       "title": "Lit Up",
       "artist": "Buckcherry",
       "album": "Buckcherry",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 6722
-        }
-      }
+      "expertMappingTimeSeconds": 6722,
+      "otherDifficulties": []
     },
     {
       "key": "london beckoned songs about money written by machines|panic at the disco",
       "title": "London Beckoned Songs About Money Written by Machines",
       "artist": "Panic! At The Disco",
       "album": "A Fever You Can't Sweat Out",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 1468
-        },
-        "Expert": {
-          "mappingTimeSeconds": 4724
-        },
-        "Hard": {
-          "mappingTimeSeconds": 5097
-        },
-        "Medium": {
-          "mappingTimeSeconds": 589
-        }
-      }
+      "expertMappingTimeSeconds": 4724,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "m1917|a crowd of rebellion",
       "title": "M1917",
       "artist": "a crowd of rebellion",
       "album": "Xanthium",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 9220
-        },
-        "Hard": {
-          "mappingTimeSeconds": 9597
-        }
-      }
+      "expertMappingTimeSeconds": 9220,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "my cocaine|smash into pieces",
       "title": "My Cocaine",
       "artist": "Smash Into Pieces",
       "album": "The Apocalypse DJ",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 6233
-        },
-        "Hard": {
-          "mappingTimeSeconds": 6299
-        }
-      }
+      "expertMappingTimeSeconds": 6233,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "my name is human|highly suspect",
       "title": "My Name Is Human",
       "artist": "Highly Suspect",
       "album": "The Boy Who Died Wolf",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 7322
-        },
-        "Hard": {
-          "mappingTimeSeconds": 7350
-        }
-      }
+      "expertMappingTimeSeconds": 7322,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "nomadic|slipknot",
       "title": "Nomadic",
       "artist": "Slipknot",
       "album": ".5: The Gray Chapter",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 9610
-        }
-      }
+      "expertMappingTimeSeconds": 9610,
+      "otherDifficulties": []
     },
     {
       "key": "pest control|the radioactive chicken heads",
       "title": "Pest Control",
       "artist": "The Radioactive Chicken Heads",
       "album": "Music For Mutants",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 4030
-        },
-        "Hard": {
-          "mappingTimeSeconds": 4109
-        }
-      }
+      "expertMappingTimeSeconds": 4030,
+      "otherDifficulties": [
+        "Hard"
+      ]
     },
     {
       "key": "radar bullet|weatherday",
       "title": "Radar Bullet",
       "artist": "Weatherday",
       "album": "Hornet Disaster",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 12095
-        }
-      }
+      "expertMappingTimeSeconds": 12095,
+      "otherDifficulties": []
     },
     {
       "key": "red house|the jimi hendrix experience",
       "title": "Red House",
       "artist": "The Jimi Hendrix Experience",
       "album": "Are You Experienced",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 6588
-        }
-      }
+      "expertMappingTimeSeconds": 6588,
+      "otherDifficulties": []
     },
     {
       "key": "skabidi toilet|sunrise skater kids",
       "title": "Skabidi Toilet",
       "artist": "Sunrise Skater Kids",
       "album": "Friendworld",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 5998
-        }
-      }
+      "expertMappingTimeSeconds": 5998,
+      "otherDifficulties": []
     },
     {
       "key": "slop|sunrise skater kids",
       "title": "Slop",
       "artist": "Sunrise Skater Kids",
       "album": "Friendworld",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 3964
-        }
-      }
+      "expertMappingTimeSeconds": 3964,
+      "otherDifficulties": []
     },
     {
       "key": "the only difference between martyrdom and suicide|panic at the disco",
       "title": "The Only Difference Between Martyrdom And Suicide",
       "artist": "Panic! At The Disco",
       "album": "A Fever You Can't Sweat Out",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 2218
-        },
-        "Expert": {
-          "mappingTimeSeconds": 4521
-        },
-        "Hard": {
-          "mappingTimeSeconds": 4871
-        },
-        "Medium": {
-          "mappingTimeSeconds": 816
-        }
-      }
+      "expertMappingTimeSeconds": 4521,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "trigger warning 2 patriotic boogaloo|sunrise skater kids",
       "title": "Trigger Warning 2: Patriotic Boogaloo",
       "artist": "Sunrise Skater Kids",
       "album": "Friendworld",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 5275
-        }
-      }
+      "expertMappingTimeSeconds": 5275,
+      "otherDifficulties": []
     },
     {
       "key": "through the fire and memes|phucyoou",
       "title": "Through the Fire and Memes",
       "artist": "PhucYoou",
       "album": "Symphony of Distraction",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 8171
-        }
-      }
+      "expertMappingTimeSeconds": 8171,
+      "otherDifficulties": []
     },
     {
       "key": "where boys fear to tread|the smashing pumpkins",
       "title": "Where Boys Fear To Tread",
       "artist": "The Smashing Pumpkins",
       "album": "Mellon Collie and the Infinite Sadness",
-      "difficulties": {
-        "Easy": {
-          "mappingTimeSeconds": 8947
-        },
-        "Expert": {
-          "mappingTimeSeconds": 9844
-        },
-        "Hard": {
-          "mappingTimeSeconds": 8862
-        },
-        "Medium": {
-          "mappingTimeSeconds": 9283
-        }
-      }
+      "expertMappingTimeSeconds": 9844,
+      "otherDifficulties": [
+        "Easy",
+        "Hard",
+        "Medium"
+      ]
     },
     {
       "key": "where no one knows|alexisonfire",
       "title": "Where No One Knows",
       "artist": "ALEXISONFIRE",
       "album": "ALEXISONFIRE",
-      "difficulties": {
-        "Expert": {
-          "mappingTimeSeconds": 8088
-        },
-        "Hard": {
-          "mappingTimeSeconds": 8392
-        }
-      }
+      "expertMappingTimeSeconds": 8088,
+      "otherDifficulties": [
+        "Hard"
+      ]
     }
   ]
 }
