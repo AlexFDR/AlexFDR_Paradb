@@ -21,7 +21,7 @@ function estimateTooltip(estimate, unavailableReason) {
   const service = `${formatMoney(estimate.serviceFee)} service fee`;
   const expert = `Expert: ${Number(estimate.expertMinutesRaw).toFixed(1)} min → ${Number(estimate.expertMinutesRounded)} min → ${formatMoney(estimate.expertCost)}`;
   const otherCount = Number(estimate.otherDifficultyCount || 0);
-  const extras = otherCount ? `${otherCount} additional difficulty ${otherCount === 1 ? '×' : '×'} ${formatMoney(2)} = ${formatMoney(estimate.otherDifficultyCost)}` : '';
+  const extras = otherCount ? `${otherCount} additional ${otherCount === 1 ? 'difficulty' : 'difficulties'} × ${formatMoney(2)} = ${formatMoney(estimate.otherDifficultyCost)}` : '';
   const albumNote = estimate.albumDiscountApplied
     ? ` Album base is ${formatMoney(estimate.base)} because ${estimate.albumSongCount} matching songs from this album were found.`
     : '';
@@ -145,7 +145,6 @@ function render() {
     videoLink.textContent = 'Open video ↗';
     links.append(chartLink, videoLink);
     body.append(artist, titleRow, meta, links);
-    video.appendChild(video.firstElementChild);
     card.append(video, body);
     gallery.append(card);
   }
