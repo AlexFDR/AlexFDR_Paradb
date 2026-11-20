@@ -100,7 +100,7 @@ def cover_url(chart):
     if value.startswith("https://"):
         return value
     filename = value.rsplit("/", 1)[-1]
-    return f"https://paradb.net/covers/{quote(str(chart.get('id', ''), safe='')}/{quote(filename, safe='')}"
+    return f"https://paradb.net/covers/{quote(str(chart.get('id', '')), safe='')}/{quote(filename, safe='')}"
 
 
 def get_page(offset):
