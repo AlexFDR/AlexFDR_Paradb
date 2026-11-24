@@ -344,8 +344,12 @@ function selectPage(page) {
 
 videosTab.addEventListener('click', () => selectPage('videos'));
 modsTab.addEventListener('click', () => selectPage('mods'));
+if (window.location.hash === '#mods') selectPage('mods');
 search.addEventListener('input', () => activePage === 'videos' ? renderVideos() : renderMods());
 howButton.addEventListener('click', () => infoDialog.showModal());
+if (window.location.hash === '#how') {
+  infoDialog.showModal();
+}
 closeDialog.addEventListener('click', () => infoDialog.close());
 infoDialog.addEventListener('click', (event) => {
   if (event.target === infoDialog) infoDialog.close();
