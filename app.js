@@ -344,10 +344,10 @@ function renderKits() {
     const card = document.createElement('article');
     card.className = 'card kit-card';
 
-    const images = (kit.images || []).map(safeImageUrl).filter(Boolean).slice(0, 3);
+    const images = (kit.images || []).map(safeImageUrl).filter(Boolean).slice(0, 1);
     if (images.length) {
       const imageRow = document.createElement('div');
-      imageRow.className = images.length > 1 ? 'kit-images kit-images-multiple' : 'kit-images';
+      imageRow.className = 'kit-images';
       images.forEach((src, index) => {
         const image = document.createElement('img');
         image.className = 'kit-image';

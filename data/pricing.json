@@ -1,6 +1,6 @@
 {
   "mappingTimeUnit": "seconds",
-  "matching": "Normalized title and artist matched to local song folders; AutoSaves excluded.",
+  "matching": "Normalized title and artist matched to local song folders; AutoSaves excluded; highest available difficulty used as the base price when Expert is absent.",
   "songs": [
     {
       "key": "calcutta|sleep token",
@@ -1494,6 +1494,24 @@
       "expertMappingTimeSeconds": 13084,
       "otherDifficulties": [
         "Hard"
+      ]
+    },
+    {
+      "key": "akari|soushi sakiyama",
+      "title": "Akari",
+      "artist": "Soushi Sakiyama",
+      "album": "i FURERU SAD UFO",
+      "expertMappingTimeSeconds": 2296,
+      "otherDifficulties": []
+    },
+    {
+      "key": "one day|spya ir",
+      "title": "One Day",
+      "artist": "SPYAIR",
+      "album": "",
+      "expertMappingTimeSeconds": 5812,
+      "otherDifficulties": [
+        "Medium"
       ]
     }
   ]
