@@ -17,6 +17,8 @@ const count = document.querySelector('#count');
 const howButton = document.querySelector('#how-button');
 const infoDialog = document.querySelector('#info-dialog');
 const closeDialog = document.querySelector('#close-dialog');
+const menuToggle = document.querySelector('#menu-toggle');
+const siteMenu = document.querySelector('#site-menu');
 let charts = [];
 let mods = [];
 let kits = [];
@@ -507,6 +509,24 @@ function selectPage(page) {
 videosTab.addEventListener('click', () => selectPage('videos'));
 modsTab.addEventListener('click', () => selectPage('mods'));
 kitsTab.addEventListener('click', () => selectPage('kits'));
+
+function setMenuOpen(open) {
+  menuToggle.setAttribute('aria-expanded', String(open));
+  siteMenu.classList.toggle('show', open);
+}
+menuToggle.addEventListener('click', () => {
+  setMenuOpen(menuToggle.getAttribute('aria-expanded') !== 'true');
+});
+siteMenu.querySelectorAll('a, button').forEach((item) => {
+  item.addEventListener('click', () => setMenuOpen(false));
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') setMenuOpen(false);
+});
+window.addEventListener('resize', () => {
+  if (window.innerWidth >= 576) setMenuOpen(false);
+}, { passive: true });
+
 if (window.location.hash === '#mods') selectPage('mods');
 if (window.location.hash === '#kits') selectPage('kits');
 search.addEventListener('input', () => {

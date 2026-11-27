@@ -24,17 +24,23 @@
   </head>
   <body>
     <main class="shell container-fluid px-3 px-sm-4">
-      <nav class="site-nav d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center justify-content-between gap-2 gap-sm-3 p-2 mb-3 rounded-3 border" aria-label="Main navigation">
-        <div class="nav-primary d-flex flex-wrap gap-2" aria-label="Gallery pages">
-          <button id="videos-tab" class="nav-main btn btn-sm is-active" type="button" aria-current="page">Videos</button>
-          <button id="kits-tab" class="nav-main btn btn-sm" type="button">Kits</button>
-          <button id="mods-tab" class="nav-main btn btn-sm" type="button">Mods</button>
-        </div>
-        <div class="nav-links d-flex flex-wrap gap-2" aria-label="External links">
-          <a class="nav-link btn btn-sm" href="https://paracommsdb.fencil.xyz/u/AlexFDR/" target="_blank" rel="noreferrer">ParaCommsDB ↗</a>
-          <a class="nav-link btn btn-sm" href="https://paradb.net/?filter=eyJ0eXBlIjoiY21wIiwiZmllbGQiOiJ1cGxvYWRlciIsIm9wIjoiZXEiLCJ2YWx1ZSI6IlU5RUFGOEEifQ" target="_blank" rel="noreferrer">ParaDB ↗</a>
-          <a class="nav-link btn btn-sm" href="https://discord.gg/paradiddle" target="_blank" rel="noreferrer">Official Discord ↗</a>
-          <a class="nav-link btn btn-sm" href="https://discord.gg/E67XUKbGFa" target="_blank" rel="noreferrer">Comms Discord ↗</a>
+      <nav class="site-nav navbar navbar-expand-sm navbar-dark rounded-3 border mb-3 p-2" aria-label="Main navigation">
+        <button id="menu-toggle" class="navbar-toggler" type="button" aria-controls="site-menu" aria-expanded="false" aria-label="Toggle navigation menu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div id="site-menu" class="collapse navbar-collapse">
+          <div class="nav-primary d-flex flex-column flex-sm-row flex-wrap gap-2 w-100" aria-label="Gallery pages">
+            <button id="videos-tab" class="nav-main btn btn-sm is-active" type="button" aria-current="page">Videos</button>
+            <button id="kits-tab" class="nav-main btn btn-sm" type="button">Kits</button>
+            <button id="mods-tab" class="nav-main btn btn-sm" type="button">Mods</button>
+          </div>
+          <div class="nav-links d-flex flex-column flex-sm-row flex-wrap gap-2 w-100 w-sm-auto ms-sm-auto mt-2 mt-sm-0" aria-label="External links">
+            <span class="nav-links-title d-sm-none">External links</span>
+            <a class="nav-link btn btn-sm" href="https://paracommsdb.fencil.xyz/u/AlexFDR/" target="_blank" rel="noreferrer">ParaCommsDB ↗</a>
+            <a class="nav-link btn btn-sm" href="https://paradb.net/?filter=eyJ0eXBlIjoiY21wIiwiZmllbGQiOiJ1cGxvYWRlciIsIm9wIjoiZXEiLCJ2YWx1ZSI6IlU5RUFGOEEifQ" target="_blank" rel="noreferrer">ParaDB ↗</a>
+            <a class="nav-link btn btn-sm" href="https://discord.gg/paradiddle" target="_blank" rel="noreferrer">Official Discord ↗</a>
+            <a class="nav-link btn btn-sm" href="https://discord.gg/E67XUKbGFa" target="_blank" rel="noreferrer">Comms Discord ↗</a>
+          </div>
         </div>
       </nav>
       <header class="hero py-4 py-md-5">

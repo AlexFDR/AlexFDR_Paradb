@@ -14,6 +14,7 @@ A static GitHub Pages gallery for YouTube previews in ParaDB charts uploaded by 
 - Fetches AlexFDR's Paradiddle mod listings from Thunderstore's community package API.
 - Opens the pricing explanation from the button beside the search field.
 - Uses a locally vendored Bootstrap 5.3 stylesheet for the responsive grid, forms, buttons, and utilities; the dark gallery theme remains in `styles.css`.
+- Collapses the navigation into a hamburger menu on small screens.
 
 ## Estimate calculation
 
