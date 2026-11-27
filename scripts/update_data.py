@@ -279,11 +279,16 @@ def cache_write(kind, key, data):
     path.write_text(json.dumps(envelope, ensure_ascii=False), encoding="utf-8")
 
 
-def fetch_cached_html(url, kind, key):
-    cached = cache_read(kind, key)
-    if cached is not None:
-        return cached
-    markup = fetch_html(url)
+def fetch_with_cache_fallback(url, kind, key):
+    """Prefer live data; use the local cache only when the site is unavailable."""
+    try:
+        markup = fetch_html(url)
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        cached = cache_read(kind, key)
+        if cached is not None:
+            print(f"Warning: using cached {kind}/{key} because the site is unavailable: {error}")
+            return cached
+        raise
     cache_write(kind, key, markup)
     return markup
 
@@ -301,7 +306,7 @@ def comms_chart_list():
     seen = set()
     for page in range(1, 31):
         try:
-            markup = fetch_cached_html(
+            markup = fetch_with_cache_fallback(
                 f"{COMMS_BASE}/u/{COMMS_USER}/?page={page}",
                 "lists",
                 f"charts-{page}",
@@ -329,11 +334,14 @@ def comms_chart_list():
 
 def comms_chart_detail(chart):
     chart_id = chart["id"]
-    cached = cache_read("charts", chart_id)
-    if cached is not None:
-        return cached
-
-    markup = fetch_html(chart["chartUrl"])
+    try:
+        markup = fetch_html(chart["chartUrl"])
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        cached = cache_read("charts", chart_id)
+        if cached is not None:
+            print(f"Warning: using cached chart {chart_id} because the site is unavailable: {error}")
+            return cached
+        raise
     video_id = None
     match = COMMS_VIDEO_RE.search(markup)
     if match:
@@ -411,7 +419,7 @@ def get_comms_charts(listings, charts_by_id, seen_songs, seen_videos, by_key, by
 
 def comms_kit_list():
     try:
-        markup = fetch_cached_html(f"{COMMS_BASE}/u/{COMMS_USER}/kits/", "lists", "kits")
+        markup = fetch_with_cache_fallback(f"{COMMS_BASE}/u/{COMMS_USER}/kits/", "lists", "kits")
     except (HTTPError, URLError, TimeoutError, OSError) as error:
         print(f"Warning: ParaCommsDB kit list unavailable: {error}")
         return []
@@ -427,11 +435,14 @@ def comms_kit_list():
 
 def comms_kit_detail(kit):
     kit_id = kit["id"]
-    cached = cache_read("kits", kit_id)
-    if cached is not None:
-        return cached
-
-    markup = fetch_html(kit["kitUrl"])
+    try:
+        markup = fetch_html(kit["kitUrl"])
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        cached = cache_read("kits", kit_id)
+        if cached is not None:
+            print(f"Warning: using cached kit {kit_id} because the site is unavailable: {error}")
+            return cached
+        raise
     heading = COMMS_KIT_HEADING_RE.search(markup)
     pieces = re.search(r"(\d+)\s+pieces", markup, re.I)
     downloads = re.search(r"(\d+)\s+Downloads", markup, re.I)
