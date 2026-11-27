@@ -68,7 +68,8 @@ h2 { margin: 0; font-size: 1.32rem; letter-spacing: -.035em; }
 .nav-main:hover, .nav-link:hover { border-color: var(--accent); color: var(--text); }
 .nav-main.is-active { border-color: #fa382e; background: #a51b22; color: #fff4f0; }
 @media (min-width: 992px) {
-  .nav-primary, .nav-links { justify-content: space-between; }
+  .nav-primary { width: auto !important; flex-shrink: 0; justify-content: flex-start; }
+  .nav-links { justify-content: flex-end; }
 }
 .nav-main:focus-visible, .nav-link:focus-visible,
 .navbar-toggler:focus-visible, .info-button:focus-visible, .close-button:focus-visible,
