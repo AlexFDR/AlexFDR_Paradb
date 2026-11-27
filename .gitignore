@@ -1,0 +1,6 @@
+# Generated at build time by scripts/update_data.py
+data/charts.json
+data/mods.json
+data/kits.json
+data/.cache/
+__pycache__/

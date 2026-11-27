@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#17080b" />
-    <meta name="description" content="AlexFDR’s ParaDB chart videos and Paradiddle mods. Chart estimates are rough; albums of six or more songs use a $10-per-song base." />
+    <meta name="description" content="AlexFDR’s ParaDB and ParaCommsDB chart videos, downloadable drum kits, and Paradiddle mods. Chart estimates are rough; albums of six or more songs use a $10-per-song base." />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="AlexFDR’s gallery" />
     <meta property="og:title" content="AlexFDR - Paradiddle custom chart portfolio" />
@@ -13,9 +13,10 @@
     <meta property="og:image:type" content="image/png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://alexfdr.github.io/AlexFDR_Paradb/assets/embed.png" />
-    <title>AlexFDR — Videos &amp; Mods</title>
+    <title>AlexFDR — Videos, Kits &amp; Mods</title>
     <link rel="preconnect" href="https://i.ytimg.com" />
     <link rel="preconnect" href="https://paradb.net" />
+    <link rel="preconnect" href="https://paracommsdb.fencil.xyz" />
     <link rel="preconnect" href="https://thunderstore.io" />
     <link rel="stylesheet" href="styles.css" />
     <script src="app.js" defer></script>
@@ -25,6 +26,7 @@
       <nav class="site-nav" aria-label="Main navigation">
         <div class="nav-primary" aria-label="Gallery pages">
           <button id="videos-tab" class="nav-main is-active" type="button" aria-current="page">Videos</button>
+          <button id="kits-tab" class="nav-main" type="button">Kits</button>
           <button id="mods-tab" class="nav-main" type="button">Mods</button>
         </div>
         <div class="nav-links" aria-label="External links">
@@ -47,13 +49,17 @@
         <section id="gallery" class="gallery" aria-label="Chart video gallery"></section>
         <section id="status" class="status" aria-live="polite"></section>
       </section>
+      <section id="kits-page" class="page-section" aria-label="Kits" hidden>
+        <section id="kits-gallery" class="gallery" aria-label="AlexFDR ParaCommsDB kits"></section>
+        <section id="kits-status" class="status" aria-live="polite"></section>
+      </section>
       <section id="mods-page" class="page-section" aria-label="Mods" hidden>
         <section id="mods-gallery" class="gallery" aria-label="AlexFDR Thunderstore mods"></section>
         <section id="mods-status" class="status" aria-live="polite"></section>
       </section>
       <footer>
-        <span>Chart data from <a href="https://paradb.net" target="_blank" rel="noreferrer">ParaDB</a></span>
-        <span>Mod listings from <a href="https://thunderstore.io/c/paradiddle/" target="_blank" rel="noreferrer">Thunderstore</a> · Videos load on request</span>
+        <span>Charts mainly from <a href="https://paradb.net" target="_blank" rel="noreferrer">ParaDB</a>, with gaps filled by <a href="https://paracommsdb.fencil.xyz/u/AlexFDR/" target="_blank" rel="noreferrer">ParaCommsDB</a></span>
+        <span>Kits from ParaCommsDB · Mods from <a href="https://thunderstore.io/c/paradiddle/" target="_blank" rel="noreferrer">Thunderstore</a> · Videos load on request</span>
       </footer>
     </main>
     <dialog id="info-dialog" class="info-dialog" aria-labelledby="dialog-title">
@@ -64,6 +70,7 @@
           <p>Because song complexity varies wildly from track to track, don't assume that just because a song doesn't have crazy fills or reality bending time signatures doesn't mean that a song's <em>“Easy to chart”.</em> The difficulty to chart a song comes primarily from if it's quantized or not. Non quantized tracks can double the amount of time it takes to chart it.</p>
           <p>Good rule of thumb, if a song's by <a href="https://i.imgur.com/WdY1ypn.png" target="_blank" rel="noreferrer">Lars Ulrich</a>, or from before the mid 80's, or is from a relatively unknown or small band (at the time it was recorded) it's most likely not quantized, meaning it's going to be a nightmare to chart so it'll cost more.</p>
           <p>Ignoring a few outliers, all of my charts use my own custom kit so that anyone that wants to play my charts only needs to make their kit once and have all of them work out of the box without having to move pieces and stuff. I might do custom kits every once in a while but that's on a case by case basis, just keep in mind that since i'm pretty much out of a VR headset right now it'll come at a significant premium since i'd need to ask either mother or fencil to make one and i think they should get something for their time.</p>
+          <p>The Kits tab lists the downloadable <code>.rlrr</code> kits I've published on ParaCommsDB.</p>
           <h3>Pricing</h3>
           <p>My rate is:</p>
           <p class="rate-line"><span class="rate-chip">$20 base + $2 'service fee'</span> + <span class="rate-chip">$1 per 10 minutes spent charting the track, which doubles for multiple difficulties with a minimum of $2</span></p>

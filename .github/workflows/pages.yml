@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: read
   pages: write
   id-token: write
@@ -29,7 +30,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
+      - name: Cache ParaCommsDB details
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/paracommsdb-cache
+          key: paracommsdb-${{ hashFiles('scripts/update_data.py') }}-${{ github.run_id }}
+          restore-keys: |
+            paracommsdb-${{ hashFiles('scripts/update_data.py') }}-
       - name: Refresh chart data
+        env:
+          PARACOMMS_CACHE_DIR: ${{ runner.temp }}/paracommsdb-cache
         run: python scripts/update_data.py
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

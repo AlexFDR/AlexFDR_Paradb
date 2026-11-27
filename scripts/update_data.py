@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""Fetch public ParaDB charts and publish uploader U9EAF8A's YouTube previews."""
+"""Fetch public ParaDB charts and publish uploader U9EAF8A's YouTube previews.
+
+ParaCommsDB is used only as a fallback for charts that ParaDB does not provide.
+Both sources are deduplicated by normalized artist/title and by YouTube video ID.
+"""
 import gzip
 import html
 import json
 import math
+import os
 import re
 import time
 import unicodedata
+from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -19,9 +25,28 @@ LIMIT = 100
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 OUT = DATA_DIR / "charts.json"
 MODS_OUT = DATA_DIR / "mods.json"
+KITS_OUT = DATA_DIR / "kits.json"
 THUNDERSTORE_API = "https://thunderstore.io/c/paradiddle/api/v1/package/"
 PRICES = DATA_DIR / "pricing.json"
 URL_RE = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
+
+COMMS_BASE = "https://paracommsdb.fencil.xyz"
+COMMS_USER = "AlexFDR"
+COMMS_CACHE = Path(os.environ.get("PARACOMMS_CACHE_DIR") or (DATA_DIR / ".cache" / "paracommsdb"))
+CACHE_TTL = 7 * 24 * 60 * 60
+
+COMMS_CHART_LINK_RE = re.compile(r'<a href="(/chart/(\d+)/)"><b>(.*?)</b></a>', re.I | re.S)
+COMMS_VIDEO_RE = re.compile(r'data-video="([\w-]+)"')
+COMMS_ALBUM_RE = re.compile(r"Album:\s*([^<\r\n]+)", re.I)
+COMMS_DATE_RE = re.compile(r"·\s*(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})")
+COMMS_DIFF_RE = re.compile(r'class="diff\s+([^"]+)"', re.I)
+COMMS_KIND_RE = re.compile(r"ctag ctag-([a-z]+)", re.I)
+COMMS_OG_IMAGE_RE = re.compile(r'<meta property="og:image" content="([^"]+)"', re.I)
+COMMS_KIT_LINK_RE = re.compile(r'<a class="poster-link" href="(/kit/(\d+)/)">', re.I)
+COMMS_KIT_NAME_RE = re.compile(r'<b class="t" title="([^"]+)">', re.I)
+COMMS_KIT_HEADING_RE = re.compile(r'<h2 class="flush">\s*(?:🥁\s*)?(.*?)</h2>', re.I | re.S)
+COMMS_KIT_IMAGE_RE = re.compile(r'src="(/kit/\d+/(?:image|pic/\d+)/[^"]*)"', re.I)
+COMMS_CARD_RE = re.compile(r'<div class="card">(.*?)</div>', re.I | re.S)
 
 
 class Links(HTMLParser):
@@ -48,6 +73,20 @@ def normalize(value):
     value = unicodedata.normalize("NFKD", str(value or ""))
     value = "".join(char for char in value if not unicodedata.combining(char))
     return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+
+
+def strip_html(value):
+    text = re.sub(r"<br\s*/?>", " ", value or "", flags=re.I)
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", html.unescape(text)).strip()
+
+
+def parse_date(value):
+    value = (value or "").strip()
+    try:
+        return datetime.strptime(value, "%d %b %Y").date().isoformat()
+    except ValueError:
+        return value
 
 
 def load_price_catalog():
@@ -123,6 +162,251 @@ def get_page(offset):
         return json.load(response)
 
 
+def fetch_html(url):
+    request = Request(
+        url,
+        headers={
+            "User-Agent": "AlexFDRParaDBGallery/1.0",
+            "Accept": "text/html,application/xhtml+xml",
+        },
+    )
+    with urlopen(request, timeout=45) as response:
+        markup = response.read().decode("utf-8", "replace")
+    time.sleep(0.15)
+    return markup
+
+
+def cache_path(kind, key):
+    return COMMS_CACHE / kind / f"{key}.json"
+
+
+def cache_read(kind, key):
+    path = cache_path(kind, key)
+    if not path.exists():
+        return None
+    try:
+        envelope = json.loads(path.read_text(encoding="utf-8"))
+        if time.time() - float(envelope.get("fetchedAt", 0)) > CACHE_TTL:
+            return None
+        return envelope.get("data")
+    except (OSError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def cache_write(kind, key, data):
+    path = cache_path(kind, key)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    envelope = {"fetchedAt": time.time(), "data": data}
+    path.write_text(json.dumps(envelope, ensure_ascii=False), encoding="utf-8")
+
+
+def split_comms_title(value):
+    text = html.unescape(value or "").strip()
+    if " - " in text:
+        artist, title = text.split(" - ", 1)
+        return artist.strip(), title.strip()
+    return "", text
+
+
+def comms_chart_list():
+    charts = []
+    seen = set()
+    for page in range(1, 31):
+        markup = fetch_html(f"{COMMS_BASE}/u/{COMMS_USER}/?page={page}")
+        found = 0
+        for href, chart_id, raw_title in COMMS_CHART_LINK_RE.findall(markup):
+            if chart_id in seen:
+                continue
+            seen.add(chart_id)
+            found += 1
+            artist, title = split_comms_title(raw_title)
+            charts.append({
+                "id": chart_id,
+                "artist": artist,
+                "title": title,
+                "chartUrl": urljoin(COMMS_BASE, href),
+            })
+        if not found:
+            break
+    return charts
+
+
+def comms_chart_detail(chart):
+    chart_id = chart["id"]
+    cached = cache_read("charts", chart_id)
+    if cached is not None:
+        return cached
+
+    markup = fetch_html(chart["chartUrl"])
+    video_id = None
+    match = COMMS_VIDEO_RE.search(markup)
+    if match:
+        video_id = match.group(1)
+
+    video_url = None
+    if not video_id:
+        parser = Links()
+        parser.feed(markup)
+        candidates = parser.urls + URL_RE.findall(markup)
+        for candidate in candidates:
+            candidate = html.unescape(candidate).rstrip(".,);]")
+            found = youtube_id(candidate)
+            if found:
+                video_id = found
+                video_url = candidate
+                break
+
+    if video_url is None and video_id:
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
+
+    album_match = COMMS_ALBUM_RE.search(markup)
+    date_match = COMMS_DATE_RE.search(markup)
+    image_match = COMMS_OG_IMAGE_RE.search(markup)
+    kind_match = COMMS_KIND_RE.search(markup)
+    kind = {"commission": "Commission", "personal": "Personal Project"}.get(
+        (kind_match.group(1) if kind_match else "").casefold(), ""
+    )
+    data = {
+        "videoId": video_id,
+        "videoUrl": video_url,
+        "album": html.unescape(album_match.group(1)).strip() if album_match else "",
+        "submissionDate": parse_date(date_match.group(1)) if date_match else None,
+        "coverUrl": html.unescape(image_match.group(1)) if image_match else None,
+        "difficulties": sorted(set(item.strip() for item in COMMS_DIFF_RE.findall(markup) if item.strip())),
+        "kind": kind,
+    }
+    cache_write("charts", chart_id, data)
+    return data
+
+
+def get_comms_charts(charts_by_id, seen_songs, seen_videos, by_key, by_title):
+    try:
+        listings = comms_chart_list()
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        print(f"Warning: ParaCommsDB chart list unavailable: {error}")
+        return 0
+
+    added = 0
+    for chart in listings:
+        try:
+            detail = comms_chart_detail(chart)
+        except (HTTPError, URLError, TimeoutError, OSError) as error:
+            print(f"Warning: skipping ParaCommsDB chart {chart['id']}: {error}")
+            continue
+
+        video_id = detail.get("videoId")
+        if not video_id:
+            continue
+        song_key = f"{normalize(chart['title'])}|{normalize(chart['artist'])}"
+        if song_key in seen_songs or video_id in seen_videos:
+            continue
+        seen_songs.add(song_key)
+        seen_videos.add(video_id)
+
+        price_entry = find_price_entry(chart, by_key, by_title)
+        charts_by_id[f"comms:{chart['id']}:{video_id}"] = {
+            "id": chart["id"],
+            "title": chart["title"],
+            "artist": chart["artist"],
+            "submissionDate": detail.get("submissionDate"),
+            "video": {"id": video_id, "url": detail.get("videoUrl")},
+            "coverUrl": detail.get("coverUrl"),
+            "chartUrl": chart["chartUrl"],
+            "source": "paracommsdb",
+            "sourceLabel": "ParaCommsDB",
+            "difficulties": detail.get("difficulties", []),
+            "kind": detail.get("kind", ""),
+            "_priceEntry": price_entry,
+            "_album": detail.get("album", ""),
+        }
+        added += 1
+    return added
+
+
+def comms_kit_list():
+    markup = fetch_html(f"{COMMS_BASE}/u/{COMMS_USER}/kits/")
+    kits = []
+    seen = set()
+    for href, kit_id in COMMS_KIT_LINK_RE.findall(markup):
+        if kit_id in seen:
+            continue
+        seen.add(kit_id)
+        kits.append({"id": kit_id, "kitUrl": urljoin(COMMS_BASE, href)})
+    return kits
+
+
+def comms_kit_detail(kit):
+    kit_id = kit["id"]
+    cached = cache_read("kits", kit_id)
+    if cached is not None:
+        return cached
+
+    markup = fetch_html(kit["kitUrl"])
+    heading = COMMS_KIT_HEADING_RE.search(markup)
+    pieces = re.search(r"(\d+)\s+pieces", markup, re.I)
+    downloads = re.search(r"(\d+)\s+Downloads", markup, re.I)
+    date_match = COMMS_DATE_RE.search(markup)
+    description = ""
+    for candidate in COMMS_CARD_RE.findall(markup):
+        if "detail-head" in candidate or "Rating:" in candidate:
+            continue
+        description = strip_html(candidate)
+        if description:
+            break
+    images = [
+        urljoin(COMMS_BASE, html.unescape(src))
+        for src in COMMS_KIT_IMAGE_RE.findall(markup)
+    ]
+    data = {
+        "name": html.unescape(heading.group(1)).strip() if heading else f"Kit {kit_id}",
+        "pieces": int(pieces.group(1)) if pieces else None,
+        "downloads": int(downloads.group(1)) if downloads else 0,
+        "uploadedAt": parse_date(date_match.group(1)) if date_match else None,
+        "description": description,
+        "images": list(dict.fromkeys(images)),
+        "downloadUrl": f"{COMMS_BASE}/kit/{kit_id}/download/",
+    }
+    cache_write("kits", kit_id, data)
+    return data
+
+
+def get_comms_kits():
+    try:
+        listings = comms_kit_list()
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        print(f"Warning: ParaCommsDB kit list unavailable: {error}")
+        return []
+
+    kits = []
+    seen_ids = set()
+    seen_names = set()
+    for listing in listings:
+        try:
+            detail = comms_kit_detail(listing)
+        except (HTTPError, URLError, TimeoutError, OSError) as error:
+            print(f"Warning: skipping ParaCommsDB kit {listing['id']}: {error}")
+            continue
+        name_key = normalize(detail.get("name"))
+        if listing["id"] in seen_ids or (name_key and name_key in seen_names):
+            continue
+        seen_ids.add(listing["id"])
+        seen_names.add(name_key)
+        kits.append({
+            "id": listing["id"],
+            "name": detail.get("name", ""),
+            "owner": COMMS_USER,
+            "pieces": detail.get("pieces"),
+            "downloads": detail.get("downloads", 0),
+            "uploadedAt": detail.get("uploadedAt"),
+            "description": detail.get("description", ""),
+            "images": detail.get("images", []),
+            "kitUrl": listing["kitUrl"],
+            "downloadUrl": detail.get("downloadUrl", ""),
+        })
+    kits.sort(key=lambda item: item.get("uploadedAt") or "", reverse=True)
+    return kits
+
+
 def get_thunderstore_mods():
     packages = []
     next_url = THUNDERSTORE_API
@@ -182,6 +466,8 @@ def get_thunderstore_mods():
 def main():
     by_key, by_title = load_price_catalog()
     charts_by_id = {}
+    seen_songs = set()
+    seen_videos = set()
     offset = 0
     total = None
     while total is None or offset < total:
@@ -206,7 +492,17 @@ def main():
                     seen.add(video_id)
                     videos.append({"id": video_id, "url": url})
             price_entry = find_price_entry(chart, by_key, by_title)
+            chart_url = f"https://paradb.net/map/{quote(str(chart.get('id', '')), safe='')}"
+            song_key = f"{normalize(chart.get('title'))}|{normalize(chart.get('artist'))}"
+            # A chart description can contain several videos for the same song.
+            # Keep the first one so the gallery never shows the same song twice.
             for video in videos:
+                if song_key in seen_songs:
+                    break
+                if video["id"] in seen_videos:
+                    continue
+                seen_songs.add(song_key)
+                seen_videos.add(video["id"])
                 charts_by_id[f"{chart.get('id')}:{video['id']}"] = {
                     "id": chart.get("id"),
                     "title": chart.get("title", ""),
@@ -214,12 +510,24 @@ def main():
                     "submissionDate": chart.get("submissionDate"),
                     "video": video,
                     "coverUrl": cover_url(chart),
+                    "chartUrl": chart_url,
+                    "source": "paradb",
+                    "sourceLabel": "ParaDB",
                     "_priceEntry": price_entry,
                 }
         offset += len(maps)
         if not maps:
             break
         time.sleep(0.15)
+
+    # ParaDB is the primary source. Its normalized song keys and video IDs are
+    # reserved first so ParaCommsDB can only fill gaps.
+    seen_songs = {
+        f"{normalize(chart.get('title'))}|{normalize(chart.get('artist'))}"
+        for chart in charts_by_id.values()
+    }
+    seen_videos = {chart["video"]["id"] for chart in charts_by_id.values()}
+    comms_added = get_comms_charts(charts_by_id, seen_songs, seen_videos, by_key, by_title)
 
     # Count unique matched songs per album, not preview videos, before applying the
     # $10-per-song base rate for albums represented by six or more gallery songs.
@@ -239,6 +547,7 @@ def main():
     result_charts = []
     for chart in charts_by_id.values():
         entry = chart.pop("_priceEntry", None)
+        chart.pop("_album", None)
         if entry:
             album_key = normalize(entry.get("album"))
             album_count = len(album_songs.get(album_key, set())) if album_key else 0
@@ -250,9 +559,11 @@ def main():
         result_charts.append(chart)
 
     mods = get_thunderstore_mods()
+    kits = get_comms_kits()
 
     result = {
         "source": API,
+        "sources": [API, COMMS_BASE],
         "uploader": UPLOADER,
         "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "charts": sorted(result_charts, key=lambda item: item.get("submissionDate") or "", reverse=True),
@@ -266,7 +577,17 @@ def main():
         "mods": mods,
     }
     MODS_OUT.write_text(json.dumps(mods_result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(result['charts'])} videos and {len(mods)} Thunderstore mods.")
+    kits_result = {
+        "source": f"{COMMS_BASE}/u/{COMMS_USER}/kits/",
+        "owner": COMMS_USER,
+        "updatedAt": result["updatedAt"],
+        "kits": kits,
+    }
+    KITS_OUT.write_text(json.dumps(kits_result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(
+        f"Wrote {len(result['charts'])} videos ({comms_added} from ParaCommsDB), "
+        f"{len(mods)} Thunderstore mods and {len(kits)} kits."
+    )
 
 
 if __name__ == "__main__":

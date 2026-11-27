@@ -2,10 +2,14 @@ const gallery = document.querySelector('#gallery');
 const statusEl = document.querySelector('#status');
 const modsGallery = document.querySelector('#mods-gallery');
 const modsStatus = document.querySelector('#mods-status');
+const kitsGallery = document.querySelector('#kits-gallery');
+const kitsStatus = document.querySelector('#kits-status');
 const videosPage = document.querySelector('#videos-page');
 const modsPage = document.querySelector('#mods-page');
+const kitsPage = document.querySelector('#kits-page');
 const videosTab = document.querySelector('#videos-tab');
 const modsTab = document.querySelector('#mods-tab');
+const kitsTab = document.querySelector('#kits-tab');
 const pageTitle = document.querySelector('#page-title');
 const searchLabel = document.querySelector('#search-label');
 const search = document.querySelector('#search');
@@ -15,10 +19,20 @@ const infoDialog = document.querySelector('#info-dialog');
 const closeDialog = document.querySelector('#close-dialog');
 let charts = [];
 let mods = [];
+let kits = [];
 let activePage = 'videos';
+
+const IMAGE_HOSTS = new Set(['i.ytimg.com', 'paradb.net', 'paracommsdb.fencil.xyz', 'thunderstore.io']);
 
 function safeText(value) {
   return String(value ?? '');
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return safeText(value);
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
 function formatMoney(value) {
@@ -47,11 +61,15 @@ function estimateTooltipItems(estimate, unavailableReason) {
   ];
 }
 
-function safeCoverUrl(value) {
+function safeImageUrl(value) {
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && url.hostname === 'paradb.net' ? url.href : null;
+    return url.protocol === 'https:' && IMAGE_HOSTS.has(url.hostname) ? url.href : null;
   } catch { return null; }
+}
+
+function safeCoverUrl(value) {
+  return safeImageUrl(value);
 }
 
 function positionPriceTooltip(estimate) {
@@ -137,13 +155,32 @@ function renderVideos() {
     const title = document.createElement('h2');
     title.textContent = safeText(chart.title);
     titleRow.append(title);
+    if (chart.sourceLabel) {
+      const source = document.createElement('span');
+      source.className = `source-badge ${chart.source === 'paracommsdb' ? 'source-badge-comms' : 'source-badge-paradb'}`;
+      source.textContent = chart.sourceLabel;
+      titleRow.append(source);
+    }
 
     const meta = document.createElement('div');
     meta.className = 'card-meta';
     const date = document.createElement('span');
     date.className = 'date';
-    date.textContent = chart.submissionDate ? new Date(chart.submissionDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+    date.textContent = formatDate(chart.submissionDate);
     meta.append(date);
+
+    if (chart.kind) {
+      const kind = document.createElement('span');
+      kind.className = 'source-tag';
+      kind.textContent = chart.kind;
+      meta.append(kind);
+    }
+    if ((chart.difficulties || []).length) {
+      const difficulties = document.createElement('span');
+      difficulties.className = 'source-tag';
+      difficulties.textContent = chart.difficulties.join(' · ');
+      meta.append(difficulties);
+    }
 
     const estimate = document.createElement('span');
     estimate.className = chart.estimate ? 'price-estimate' : 'price-estimate missing';
@@ -172,10 +209,10 @@ function renderVideos() {
     const links = document.createElement('div');
     links.className = 'card-links';
     const chartLink = document.createElement('a');
-    chartLink.href = `https://paradb.net/map/${encodeURIComponent(chart.id)}`;
+    chartLink.href = safeExternalUrl(chart.chartUrl) || `https://paradb.net/map/${encodeURIComponent(chart.id)}`;
     chartLink.target = '_blank';
     chartLink.rel = 'noreferrer';
-    chartLink.textContent = 'View chart ↗';
+    chartLink.textContent = chart.source === 'paracommsdb' ? 'View on ParaCommsDB ↗' : 'View chart ↗';
     const videoLink = document.createElement('a');
     videoLink.href = chart.video.url;
     videoLink.target = '_blank';
@@ -315,25 +352,151 @@ async function loadMods() {
   }
 }
 
+function renderKits() {
+  const needle = search.value.trim().toLocaleLowerCase();
+  const shown = kits.filter((kit) => `${kit.name} ${kit.owner} ${kit.description}`.toLocaleLowerCase().includes(needle));
+  if (activePage === 'kits') count.textContent = `${shown.length} ${shown.length === 1 ? 'kit' : 'kits'}`;
+  kitsGallery.replaceChildren();
+  kitsStatus.textContent = shown.length ? '' : 'No kits match that search.';
+
+  for (const kit of shown) {
+    const card = document.createElement('article');
+    card.className = 'card kit-card';
+
+    const images = (kit.images || []).map(safeImageUrl).filter(Boolean).slice(0, 3);
+    if (images.length) {
+      const imageRow = document.createElement('div');
+      imageRow.className = images.length > 1 ? 'kit-images kit-images-multiple' : 'kit-images';
+      images.forEach((src, index) => {
+        const image = document.createElement('img');
+        image.className = 'kit-image';
+        image.src = src;
+        image.alt = index === 0 ? `${safeText(kit.name)} kit preview` : '';
+        image.loading = 'lazy';
+        image.decoding = 'async';
+        image.addEventListener('error', () => image.remove(), { once: true });
+        imageRow.append(image);
+      });
+      card.append(imageRow);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'card-body kit-body';
+    const owner = document.createElement('p');
+    owner.className = 'artist';
+    owner.textContent = safeText(kit.owner);
+
+    const titleRow = document.createElement('div');
+    titleRow.className = 'title-row';
+    const name = document.createElement('h2');
+    name.textContent = safeText(kit.name);
+    const source = document.createElement('span');
+    source.className = 'source-badge source-badge-comms';
+    source.textContent = 'ParaCommsDB';
+    titleRow.append(name, source);
+
+    const description = document.createElement('p');
+    description.className = 'kit-description';
+    description.textContent = safeText(kit.description) || 'No description provided.';
+
+    const metadata = document.createElement('div');
+    metadata.className = 'mod-meta kit-meta';
+    const pieces = Number(kit.pieces);
+    if (kit.pieces != null && Number.isFinite(pieces)) {
+      const tag = document.createElement('span');
+      tag.textContent = `${pieces} pieces`;
+      metadata.append(tag);
+    }
+    const downloads = Number(kit.downloads);
+    if (Number.isFinite(downloads)) {
+      const tag = document.createElement('span');
+      tag.textContent = `${downloads.toLocaleString()} downloads`;
+      metadata.append(tag);
+    }
+    const uploaded = formatDate(kit.uploadedAt);
+    if (uploaded) {
+      const tag = document.createElement('span');
+      tag.textContent = `Added ${uploaded}`;
+      metadata.append(tag);
+    }
+
+    const links = document.createElement('div');
+    links.className = 'card-links';
+    const kitUrl = safeExternalUrl(kit.kitUrl);
+    if (kitUrl) {
+      const link = document.createElement('a');
+      link.href = kitUrl;
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      link.textContent = 'View on ParaCommsDB ↗';
+      links.append(link);
+    }
+    const downloadUrl = safeExternalUrl(kit.downloadUrl);
+    if (downloadUrl) {
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      link.textContent = 'Download .rlrr ↗';
+      links.append(link);
+    }
+
+    body.append(owner, titleRow, description, metadata, links);
+    card.append(body);
+    kitsGallery.append(card);
+  }
+}
+
+async function loadKits() {
+  try {
+    const response = await fetch('data/kits.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Kit data returned HTTP ${response.status}`);
+    const payload = await response.json();
+    kits = Array.isArray(payload.kits) ? payload.kits : [];
+    if (activePage === 'kits') renderKits();
+    kitsStatus.className = 'status';
+    if (!kits.length) kitsStatus.textContent = 'No ParaCommsDB kits were found.';
+  } catch (error) {
+    if (activePage === 'kits') count.textContent = 'Kit data unavailable';
+    kitsStatus.className = 'status error';
+    kitsStatus.textContent = 'Could not load the kit list. Please try again later.';
+    console.error(error);
+  }
+}
+
 function selectPage(page) {
   activePage = page;
+  const showingVideos = page === 'videos';
   const showingMods = page === 'mods';
-  document.title = showingMods ? 'AlexFDR — Mods' : 'AlexFDR — ParaDB Video Gallery';
-  videosPage.hidden = showingMods;
+  const showingKits = page === 'kits';
+  document.title = showingMods
+    ? 'AlexFDR — Mods'
+    : showingKits
+      ? 'AlexFDR — Kits'
+      : 'AlexFDR — ParaDB Video Gallery';
+  videosPage.hidden = !showingVideos;
   modsPage.hidden = !showingMods;
-  videosTab.classList.toggle('is-active', !showingMods);
+  kitsPage.hidden = !showingKits;
+  videosTab.classList.toggle('is-active', showingVideos);
   modsTab.classList.toggle('is-active', showingMods);
+  kitsTab.classList.toggle('is-active', showingKits);
+
+  for (const tab of [videosTab, modsTab, kitsTab]) tab.removeAttribute('aria-current');
+  (showingMods ? modsTab : showingKits ? kitsTab : videosTab).setAttribute('aria-current', 'page');
+
   if (showingMods) {
-    videosTab.removeAttribute('aria-current');
-    modsTab.setAttribute('aria-current', 'page');
     pageTitle.textContent = 'AlexFDR’s mods';
     searchLabel.textContent = 'Find a mod';
     search.placeholder = 'Search mods…';
     howButton.hidden = true;
     renderMods();
+  } else if (showingKits) {
+    pageTitle.textContent = 'AlexFDR’s kits';
+    searchLabel.textContent = 'Find a kit';
+    search.placeholder = 'Search kits…';
+    howButton.hidden = true;
+    renderKits();
   } else {
-    modsTab.removeAttribute('aria-current');
-    videosTab.setAttribute('aria-current', 'page');
     pageTitle.textContent = 'AlexFDR’s charts';
     searchLabel.textContent = 'Find a song or artist';
     search.placeholder = 'Search the gallery…';
@@ -344,8 +507,14 @@ function selectPage(page) {
 
 videosTab.addEventListener('click', () => selectPage('videos'));
 modsTab.addEventListener('click', () => selectPage('mods'));
+kitsTab.addEventListener('click', () => selectPage('kits'));
 if (window.location.hash === '#mods') selectPage('mods');
-search.addEventListener('input', () => activePage === 'videos' ? renderVideos() : renderMods());
+if (window.location.hash === '#kits') selectPage('kits');
+search.addEventListener('input', () => {
+  if (activePage === 'mods') renderMods();
+  else if (activePage === 'kits') renderKits();
+  else renderVideos();
+});
 howButton.addEventListener('click', () => infoDialog.showModal());
 if (window.location.hash === '#how') {
   infoDialog.showModal();
@@ -356,3 +525,4 @@ infoDialog.addEventListener('click', (event) => {
 });
 loadVideos();
 loadMods();
+loadKits();

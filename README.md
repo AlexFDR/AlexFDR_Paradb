@@ -1,11 +1,14 @@
 # AlexFDR ParaDB Video Gallery
 
-A static GitHub Pages gallery for YouTube previews in ParaDB charts uploaded by U9EAF8A, plus Paradiddle mods authored by AlexFDR on Thunderstore.
+A static GitHub Pages gallery for YouTube previews in ParaDB charts uploaded by U9EAF8A, with gaps filled by AlexFDR's ParaCommsDB charts. It also lists AlexFDR's downloadable ParaCommsDB kits and Paradiddle mods from Thunderstore.
 
 ## Features
 
 - Finds YouTube links in chart descriptions and refreshes the gallery daily.
-- Uses ParaDB album art as each video card's background.
+- Uses ParaDB as the primary chart source; ParaCommsDB only fills songs that ParaDB lacks, deduplicated by song and YouTube video ID.
+- Uses ParaDB or ParaCommsDB cover art as each video card's background and labels each card with its source.
+- Lists AlexFDR's four ParaCommsDB kits with previews and `.rlrr` download links.
+- Caches ParaCommsDB detail pages for seven days and throttles requests; the cache lives outside the published site files.
 - Loads a YouTube embed only after its thumbnail is clicked.
 - Shows rough price estimates for locally matched charts using the saved Expert mappingTime; AutoSaves are excluded.
 - Fetches AlexFDR's Paradiddle mod listings from Thunderstore's community package API.
@@ -19,4 +22,4 @@ The site treats mappingTime as seconds, based on five-minute autosave increments
 
 The Refresh gallery and publish GitHub Actions workflow builds and deploys the site when main changes, on a daily schedule, or when manually started. In repository settings, Pages must use GitHub Actions as the publishing source.
 
-The workflow fetches ParaDB's public /api/maps endpoint and Thunderstore's Paradiddle community package endpoint. It filters ParaDB maps by uploader ID, extracts YouTube links from chart descriptions, and filters mods by owner name. No API keys are used.
+The workflow fetches ParaDB's public `/api/maps` endpoint and Thunderstore's Paradiddle community package endpoint. It filters ParaDB maps by uploader ID, extracts YouTube links from chart descriptions, and filters mods by owner name. ParaCommsDB has no public JSON API, so the workflow reads its public HTML pages with a throttled request and a seven-day detail cache. No API keys are used.
