@@ -8,11 +8,12 @@ A static GitHub Pages gallery for YouTube previews in ParaDB charts uploaded by 
 - Uses ParaDB as the primary chart source; ParaCommsDB only fills songs that ParaDB lacks, deduplicated by song and YouTube video ID.
 - Caches ParaDB or ParaCommsDB cover art locally and uses it for each video card's thumbnail and background.
 - Lists AlexFDR's four ParaCommsDB kits with previews and `.rlrr` download links.
-- Caches ParaCommsDB detail pages for seven days and throttles requests; the cache lives outside the published site files. Cover images are cached in `data/covers/` and restored from the Actions cache.
+- Fetches live ParaCommsDB listings/details and falls back to the seven-day cache only when the site is unavailable; the cache lives outside the published site files. Cover images are cached in `data/covers/` and restored from the Actions cache.
 - Loads a YouTube embed only after its cached cover thumbnail is clicked.
 - Shows rough price estimates for locally matched charts using the saved Expert mappingTime; AutoSaves are excluded.
 - Fetches AlexFDR's Paradiddle mod listings from Thunderstore's community package API.
 - Opens the pricing explanation from the button beside the search field.
+- Uses a locally vendored Bootstrap 5.3 stylesheet for the responsive grid, forms, buttons, and utilities; the dark gallery theme remains in `styles.css`.
 
 ## Estimate calculation
 

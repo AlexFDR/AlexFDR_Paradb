@@ -81,8 +81,21 @@ function positionPriceTooltip(estimate) {
   const tooltip = estimate.querySelector('.price-tooltip');
   if (!tooltip) return;
   const rect = estimate.getBoundingClientRect();
-  const width = Math.min(360, window.innerWidth - 40);
-  tooltip.classList.toggle('align-right', rect.left + width > window.innerWidth - 12);
+  const width = Math.max(120, Math.min(360, window.innerWidth - 24));
+  const clampedLeft = Math.min(Math.max(rect.left, 12), window.innerWidth - width - 12);
+  tooltip.style.left = `${clampedLeft - rect.left}px`;
+  tooltip.style.right = 'auto';
+}
+
+function positionAllPriceTooltips() {
+  document.querySelectorAll('.price-estimate').forEach(positionPriceTooltip);
+}
+
+function appendGalleryCard(container, card) {
+  const column = document.createElement('div');
+  column.className = 'col d-flex';
+  column.append(card);
+  container.append(column);
 }
 
 
@@ -135,7 +148,7 @@ function renderVideos() {
 
   for (const chart of shown) {
     const card = document.createElement('article');
-    card.className = 'card';
+    card.className = 'card h-100 w-100';
     const coverUrl = safeCoverUrl(chart.coverUrl);
     if (coverUrl) {
       const cover = document.createElement('img');
@@ -209,7 +222,8 @@ function renderVideos() {
     links.append(chartLink, videoLink);
     body.append(artist, titleRow, meta, links);
     card.append(video, body);
-    gallery.append(card);
+    appendGalleryCard(gallery, card);
+    positionPriceTooltip(estimate);
   }
 }
 
@@ -240,7 +254,7 @@ function renderMods() {
 
   for (const mod of shown) {
     const card = document.createElement('article');
-    card.className = 'card mod-card';
+    card.className = 'card h-100 w-100 mod-card';
     const header = document.createElement('div');
     header.className = 'mod-header';
     const iconUrl = safeExternalUrl(mod.iconUrl);
@@ -313,7 +327,7 @@ function renderMods() {
     }
     details.append(description, metadata, links);
     card.append(header, details);
-    modsGallery.append(card);
+    appendGalleryCard(modsGallery, card);
   }
 }
 
@@ -349,7 +363,7 @@ function renderKits() {
 
   for (const kit of shown) {
     const card = document.createElement('article');
-    card.className = 'card kit-card';
+    card.className = 'card h-100 w-100 kit-card';
 
     const images = (kit.images || []).map(safeImageUrl).filter(Boolean).slice(0, 1);
     if (images.length) {
@@ -428,7 +442,7 @@ function renderKits() {
 
     body.append(owner, titleRow, description, metadata, links);
     card.append(body);
-    kitsGallery.append(card);
+    appendGalleryCard(kitsGallery, card);
   }
 }
 
@@ -508,6 +522,7 @@ closeDialog.addEventListener('click', () => infoDialog.close());
 infoDialog.addEventListener('click', (event) => {
   if (event.target === infoDialog) infoDialog.close();
 });
+window.addEventListener('resize', positionAllPriceTooltips, { passive: true });
 loadVideos();
 loadMods();
 loadKits();
