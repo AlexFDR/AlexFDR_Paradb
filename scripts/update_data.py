@@ -279,6 +279,15 @@ def cache_write(kind, key, data):
     path.write_text(json.dumps(envelope, ensure_ascii=False), encoding="utf-8")
 
 
+def fetch_cached_html(url, kind, key):
+    cached = cache_read(kind, key)
+    if cached is not None:
+        return cached
+    markup = fetch_html(url)
+    cache_write(kind, key, markup)
+    return markup
+
+
 def split_comms_title(value):
     text = html.unescape(value or "").strip()
     if " - " in text:
@@ -291,7 +300,15 @@ def comms_chart_list():
     charts = []
     seen = set()
     for page in range(1, 31):
-        markup = fetch_html(f"{COMMS_BASE}/u/{COMMS_USER}/?page={page}")
+        try:
+            markup = fetch_cached_html(
+                f"{COMMS_BASE}/u/{COMMS_USER}/?page={page}",
+                "lists",
+                f"charts-{page}",
+            )
+        except (HTTPError, URLError, TimeoutError, OSError) as error:
+            print(f"Warning: ParaCommsDB chart list page {page} unavailable: {error}")
+            break
         found = 0
         for href, chart_id, raw_title in COMMS_CHART_LINK_RE.findall(markup):
             if chart_id in seen:
@@ -393,7 +410,11 @@ def get_comms_charts(listings, charts_by_id, seen_songs, seen_videos, by_key, by
 
 
 def comms_kit_list():
-    markup = fetch_html(f"{COMMS_BASE}/u/{COMMS_USER}/kits/")
+    try:
+        markup = fetch_cached_html(f"{COMMS_BASE}/u/{COMMS_USER}/kits/", "lists", "kits")
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        print(f"Warning: ParaCommsDB kit list unavailable: {error}")
+        return []
     kits = []
     seen = set()
     for href, kit_id in COMMS_KIT_LINK_RE.findall(markup):
