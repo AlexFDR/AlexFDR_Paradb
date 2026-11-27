@@ -6,7 +6,7 @@ A static GitHub Pages gallery for YouTube previews in ParaDB charts uploaded by 
 
 - Finds YouTube links in chart descriptions and refreshes the gallery daily.
 - Uses ParaDB as the primary chart source; ParaCommsDB only fills songs that ParaDB lacks, deduplicated by song and YouTube video ID.
-- Uses ParaDB or ParaCommsDB cover art as each video card's background and labels each card with its source.
+- Uses ParaDB or ParaCommsDB cover art as each video card's background.
 - Lists AlexFDR's four ParaCommsDB kits with previews and `.rlrr` download links.
 - Caches ParaCommsDB detail pages for seven days and throttles requests; the cache lives outside the published site files.
 - Loads a YouTube embed only after its thumbnail is clicked.

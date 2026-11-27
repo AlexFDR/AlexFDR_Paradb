@@ -279,13 +279,7 @@ def comms_chart_detail(chart):
     return data
 
 
-def get_comms_charts(charts_by_id, seen_songs, seen_videos, by_key, by_title):
-    try:
-        listings = comms_chart_list()
-    except (HTTPError, URLError, TimeoutError, OSError) as error:
-        print(f"Warning: ParaCommsDB chart list unavailable: {error}")
-        return 0
-
+def get_comms_charts(listings, charts_by_id, seen_songs, seen_videos, by_key, by_title):
     added = 0
     for chart in listings:
         try:
@@ -312,10 +306,6 @@ def get_comms_charts(charts_by_id, seen_songs, seen_videos, by_key, by_title):
             "video": {"id": video_id, "url": detail.get("videoUrl")},
             "coverUrl": detail.get("coverUrl"),
             "chartUrl": chart["chartUrl"],
-            "source": "paracommsdb",
-            "sourceLabel": "ParaCommsDB",
-            "difficulties": detail.get("difficulties", []),
-            "kind": detail.get("kind", ""),
             "_priceEntry": price_entry,
             "_album": detail.get("album", ""),
         }
@@ -511,14 +501,29 @@ def main():
                     "video": video,
                     "coverUrl": cover_url(chart),
                     "chartUrl": chart_url,
-                    "source": "paradb",
-                    "sourceLabel": "ParaDB",
                     "_priceEntry": price_entry,
                 }
         offset += len(maps)
         if not maps:
             break
         time.sleep(0.15)
+
+    try:
+        comms_listings = comms_chart_list()
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        print(f"Warning: ParaCommsDB chart list unavailable: {error}")
+        comms_listings = []
+
+    # Every card uses a ParaCommsDB chart page when the same song exists there.
+    # Songs without a ParaCommsDB match keep their ParaDB chart URL.
+    comms_chart_urls = {}
+    for chart in comms_listings:
+        song_key = f"{normalize(chart['title'])}|{normalize(chart['artist'])}"
+        comms_chart_urls.setdefault(song_key, chart["chartUrl"])
+    for chart in charts_by_id.values():
+        song_key = f"{normalize(chart.get('title'))}|{normalize(chart.get('artist'))}"
+        if song_key in comms_chart_urls:
+            chart["chartUrl"] = comms_chart_urls[song_key]
 
     # ParaDB is the primary source. Its normalized song keys and video IDs are
     # reserved first so ParaCommsDB can only fill gaps.
@@ -527,7 +532,7 @@ def main():
         for chart in charts_by_id.values()
     }
     seen_videos = {chart["video"]["id"] for chart in charts_by_id.values()}
-    comms_added = get_comms_charts(charts_by_id, seen_songs, seen_videos, by_key, by_title)
+    comms_added = get_comms_charts(comms_listings, charts_by_id, seen_songs, seen_videos, by_key, by_title)
 
     # Count unique matched songs per album, not preview videos, before applying the
     # $10-per-song base rate for albums represented by six or more gallery songs.
@@ -563,7 +568,6 @@ def main():
 
     result = {
         "source": API,
-        "sources": [API, COMMS_BASE],
         "uploader": UPLOADER,
         "updatedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "charts": sorted(result_charts, key=lambda item: item.get("submissionDate") or "", reverse=True),

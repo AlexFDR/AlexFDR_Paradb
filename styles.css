@@ -274,21 +274,7 @@ footer { border-top: 1px solid var(--panel-edge); padding: 20px 0 30px; display:
 .mod-tag { border: 1px solid #762027; border-radius: 999px; background: #40090e; padding: 4px 8px; color: #ffd2cb; }
 .mod-links { padding-top: 12px; }
 
-/* Source badges and kit cards */
-.card-meta { flex-wrap: wrap; justify-content: flex-start; }
-.title-row { align-items: center; }
-.source-badge, .source-tag {
-  border: 1px solid #762027;
-  border-radius: 999px;
-  background: #40090e;
-  color: #ffd2cb;
-  font: 10px 'DM Mono', monospace;
-  white-space: nowrap;
-}
-.source-badge { flex: 0 0 auto; padding: 4px 8px; }
-.source-tag { padding: 4px 8px; }
-.source-badge-paradb { border-color: #c33236; background: #711017; color: #ffe0dc; }
-.source-badge-comms { border-color: #9b62db; background: #3a165f; color: #f2e2ff; }
+/* Kit cards */
 .kit-images { position: relative; z-index: 2; flex: 0 0 auto; overflow: hidden; border-radius: 12px 12px 0 0; background: #210607; }
 .kit-image { display: block; width: 100%; max-height: 260px; aspect-ratio: 16 / 9; object-fit: cover; }
 .kit-images-multiple { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }

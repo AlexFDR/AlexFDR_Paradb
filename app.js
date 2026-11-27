@@ -155,12 +155,6 @@ function renderVideos() {
     const title = document.createElement('h2');
     title.textContent = safeText(chart.title);
     titleRow.append(title);
-    if (chart.sourceLabel) {
-      const source = document.createElement('span');
-      source.className = `source-badge ${chart.source === 'paracommsdb' ? 'source-badge-comms' : 'source-badge-paradb'}`;
-      source.textContent = chart.sourceLabel;
-      titleRow.append(source);
-    }
 
     const meta = document.createElement('div');
     meta.className = 'card-meta';
@@ -168,19 +162,6 @@ function renderVideos() {
     date.className = 'date';
     date.textContent = formatDate(chart.submissionDate);
     meta.append(date);
-
-    if (chart.kind) {
-      const kind = document.createElement('span');
-      kind.className = 'source-tag';
-      kind.textContent = chart.kind;
-      meta.append(kind);
-    }
-    if ((chart.difficulties || []).length) {
-      const difficulties = document.createElement('span');
-      difficulties.className = 'source-tag';
-      difficulties.textContent = chart.difficulties.join(' · ');
-      meta.append(difficulties);
-    }
 
     const estimate = document.createElement('span');
     estimate.className = chart.estimate ? 'price-estimate' : 'price-estimate missing';
@@ -212,7 +193,7 @@ function renderVideos() {
     chartLink.href = safeExternalUrl(chart.chartUrl) || `https://paradb.net/map/${encodeURIComponent(chart.id)}`;
     chartLink.target = '_blank';
     chartLink.rel = 'noreferrer';
-    chartLink.textContent = chart.source === 'paracommsdb' ? 'View on ParaCommsDB ↗' : 'View chart ↗';
+    chartLink.textContent = 'View chart ↗';
     const videoLink = document.createElement('a');
     videoLink.href = chart.video.url;
     videoLink.target = '_blank';
@@ -390,10 +371,7 @@ function renderKits() {
     titleRow.className = 'title-row';
     const name = document.createElement('h2');
     name.textContent = safeText(kit.name);
-    const source = document.createElement('span');
-    source.className = 'source-badge source-badge-comms';
-    source.textContent = 'ParaCommsDB';
-    titleRow.append(name, source);
+    titleRow.append(name);
 
     const description = document.createElement('p');
     description.className = 'kit-description';
