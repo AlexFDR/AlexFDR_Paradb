@@ -1513,6 +1513,14 @@
       "otherDifficulties": [
         "Medium"
       ]
+    },
+    {
+      "key": "deja vu|sleeping with sirens",
+      "title": "Déjà Vu",
+      "artist": "Sleeping With Sirens",
+      "album": "Feel",
+      "expertMappingTimeSeconds": 4037,
+      "otherDifficulties": []
     }
   ]
 }
