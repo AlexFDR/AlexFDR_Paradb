@@ -5,7 +5,9 @@ ParaCommsDB is used only as a fallback for charts that ParaDB does not provide.
 Both sources are deduplicated by normalized artist/title and by YouTube video ID.
 """
 import gzip
+import hashlib
 import html
+import io
 import json
 import math
 import os
@@ -26,6 +28,7 @@ DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 OUT = DATA_DIR / "charts.json"
 MODS_OUT = DATA_DIR / "mods.json"
 KITS_OUT = DATA_DIR / "kits.json"
+COVERS_DIR = DATA_DIR / "covers"
 THUNDERSTORE_API = "https://thunderstore.io/c/paradiddle/api/v1/package/"
 PRICES = DATA_DIR / "pricing.json"
 URL_RE = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
@@ -153,6 +156,82 @@ def cover_url(chart):
         return value
     filename = value.rsplit("/", 1)[-1]
     return f"https://paradb.net/covers/{quote(str(chart.get('id', '')), safe='')}/{quote(filename, safe='')}"
+
+
+COVER_EXTENSIONS = (".webp", ".jpg", ".png", ".gif", ".img")
+COVER_EXT_BY_TYPE = {
+    "image/webp": ".webp",
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+}
+
+
+def cover_extension(content_type, body):
+    ext = COVER_EXT_BY_TYPE.get(content_type)
+    if ext:
+        return ext
+    if body.startswith(b"RIFF") and body[8:12] == b"WEBP":
+        return ".webp"
+    if body.startswith(b"\xff\xd8\xff"):
+        return ".jpg"
+    if body.startswith(b"\x89PNG"):
+        return ".png"
+    if body.startswith(b"GIF8"):
+        return ".gif"
+    return ".img"
+
+
+def optimize_cover(body, ext):
+    """Resize covers to a web-friendly thumbnail, keeping the original if Pillow is missing."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return body, ext
+    try:
+        with Image.open(io.BytesIO(body)) as image:
+            image = image.convert("RGBA" if "A" in image.getbands() else "RGB")
+            image.thumbnail((960, 960), getattr(getattr(Image, "Resampling", Image), "LANCZOS"))
+            output = io.BytesIO()
+            image.save(output, format="WEBP", quality=82, method=6)
+            return output.getvalue(), ".webp"
+    except Exception as error:
+        print(f"Warning: could not optimize cover: {error}")
+        return body, ext
+
+
+def cache_cover(url):
+    """Store a cover locally once and return its site-relative URL."""
+    if not url or not str(url).startswith("https://"):
+        return None
+    url = str(url)
+    digest = hashlib.sha256(f"thumb-v2|{url}".encode("utf-8")).hexdigest()[:16]
+    for ext in COVER_EXTENSIONS:
+        cached = COVERS_DIR / f"{digest}{ext}"
+        if cached.is_file() and cached.stat().st_size:
+            return f"data/covers/{cached.name}"
+    try:
+        request = Request(
+            url,
+            headers={
+                "User-Agent": "AlexFDRParaDBGallery/1.0",
+                "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+            },
+        )
+        with urlopen(request, timeout=45) as response:
+            content_type = response.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+            body = response.read()
+    except (HTTPError, URLError, TimeoutError, OSError) as error:
+        print(f"Warning: could not cache cover {url}: {error}")
+        return None
+    if not body:
+        return None
+    body, ext = optimize_cover(body, cover_extension(content_type, body))
+    path = COVERS_DIR / f"{digest}{ext}"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(body)
+    time.sleep(0.05)
+    return f"data/covers/{path.name}"
 
 
 def get_page(offset):
@@ -563,6 +642,25 @@ def main():
                 chart["estimateUnavailableReason"] = "No Expert difficulty mapping time was found."
         result_charts.append(chart)
 
+    cached_covers = 0
+    for chart in result_charts:
+        source = chart.get("coverUrl")
+        cached = cache_cover(source)
+        if cached:
+            chart["coverSourceUrl"] = source
+            chart["coverUrl"] = cached
+            cached_covers += 1
+
+    expected_covers = {
+        Path(chart["coverUrl"]).name
+        for chart in result_charts
+        if str(chart.get("coverUrl", "")).startswith("data/covers/")
+    }
+    if COVERS_DIR.exists():
+        for path in COVERS_DIR.iterdir():
+            if path.is_file() and path.name not in expected_covers:
+                path.unlink()
+
     mods = get_thunderstore_mods()
     kits = get_comms_kits()
 
@@ -590,7 +688,8 @@ def main():
     KITS_OUT.write_text(json.dumps(kits_result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         f"Wrote {len(result['charts'])} videos ({comms_added} from ParaCommsDB), "
-        f"{len(mods)} Thunderstore mods and {len(kits)} kits."
+        f"{len(mods)} Thunderstore mods and {len(kits)} kits; "
+        f"cached {cached_covers} cover images."
     )
 
 

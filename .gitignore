@@ -2,5 +2,6 @@
 data/charts.json
 data/mods.json
 data/kits.json
+data/covers/
 data/.cache/
 __pycache__/

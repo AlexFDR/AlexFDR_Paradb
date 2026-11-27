@@ -118,7 +118,7 @@ input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #ff302822; }
   color: white;
   cursor: pointer;
 }
-.video-facade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .84; transition: opacity .18s ease; }
+.video-facade img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: .84; transition: opacity .18s ease; }
 .video-facade:hover img { opacity: 1; }
 .video-facade::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, #08010266, transparent 70%); pointer-events: none; }
 .video-play {

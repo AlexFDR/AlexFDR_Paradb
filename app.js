@@ -68,8 +68,13 @@ function safeImageUrl(value) {
   } catch { return null; }
 }
 
+function safeLocalAsset(value) {
+  const text = String(value ?? '');
+  return /^data\/covers\/[A-Za-z0-9._-]+$/.test(text) ? text : null;
+}
+
 function safeCoverUrl(value) {
-  return safeImageUrl(value);
+  return safeLocalAsset(value) || safeImageUrl(value);
 }
 
 function positionPriceTooltip(estimate) {
@@ -98,14 +103,16 @@ function createVideoFacade(chart, video) {
   facade.className = 'video-facade';
   facade.setAttribute('aria-label', `Play video preview for ${safeText(chart.artist)} — ${safeText(chart.title)}`);
 
+  const coverUrl = safeCoverUrl(chart.coverUrl);
+  const youtubeThumb = (size) => `https://i.ytimg.com/vi/${encodeURIComponent(chart.video.id)}/${size}.jpg`;
   const thumbnail = document.createElement('img');
-  thumbnail.src = `https://i.ytimg.com/vi/${encodeURIComponent(chart.video.id)}/hqdefault.jpg`;
+  thumbnail.src = coverUrl || youtubeThumb('hqdefault');
   thumbnail.alt = '';
   thumbnail.loading = 'lazy';
   thumbnail.decoding = 'async';
   thumbnail.addEventListener('error', () => {
     if (!thumbnail.src.includes('/mqdefault.jpg')) {
-      thumbnail.src = `https://i.ytimg.com/vi/${encodeURIComponent(chart.video.id)}/mqdefault.jpg`;
+      thumbnail.src = youtubeThumb('mqdefault');
     }
   }, { once: true });
 
